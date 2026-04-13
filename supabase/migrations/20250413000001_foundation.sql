@@ -77,6 +77,12 @@ CREATE TABLE public.users (
   display_name       TEXT NOT NULL,
   avatar_url         TEXT,
   locale             public.language NOT NULL DEFAULT 'de',
+  -- XP & Level (benötigt von grant_xp() in Migration 2)
+  xp_total           INT NOT NULL DEFAULT 0,
+  level              INT NOT NULL DEFAULT 1,
+  level_title        TEXT NOT NULL DEFAULT 'Awakening',
+  -- Subscription-Tier (benötigt von Data-Retention in Migration 3)
+  subscription_tier  TEXT NOT NULL DEFAULT 'free' CHECK (subscription_tier IN ('free','pro')),
   -- KI-Hook (PRD §14, Phase 2): Opt-in zu KI-Features, Default false
   ai_consent         BOOLEAN NOT NULL DEFAULT false,
   ai_consent_at      TIMESTAMPTZ,
@@ -348,48 +354,62 @@ RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS
   SELECT auth.uid() = target_user
 $$;
 
+-- Gibt die athlete_profiles.id des eingeloggten Users zurück (= auth.uid() wenn Profil existiert)
+CREATE OR REPLACE FUNCTION public.own_athlete_profile_id()
+RETURNS UUID LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT id FROM public.athlete_profiles WHERE id = auth.uid()
+$$;
+
+-- HAND-EDIT: LANGUAGE sql → plpgsql, damit die Funktionen erstellt werden können
+-- BEVOR coach_athlete_engagements existiert (Tabelle kommt in Migration 3).
+-- plpgsql validiert Tabellenreferenzen erst bei Ausführung, nicht bei Erstellung.
+
 CREATE OR REPLACE FUNCTION public.is_linked_coach(athlete UUID)
-RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
-  SELECT EXISTS (
+RETURNS BOOLEAN LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  RETURN EXISTS (
     SELECT 1 FROM public.coach_athlete_engagements e
     WHERE e.coach_id   = auth.uid()
       AND e.athlete_id = athlete
       AND e.status     = 'active'
-  )
-$$;
+  );
+END $$;
 
 CREATE OR REPLACE FUNCTION public.is_linked_coach_with_tracking(athlete UUID)
-RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
-  SELECT EXISTS (
+RETURNS BOOLEAN LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  RETURN EXISTS (
     SELECT 1 FROM public.coach_athlete_engagements e
     WHERE e.coach_id   = auth.uid()
       AND e.athlete_id = athlete
       AND e.status     = 'active'
       AND e.can_see_tracking = true
-  )
-$$;
+  );
+END $$;
 
 CREATE OR REPLACE FUNCTION public.is_linked_coach_with_tests(athlete UUID)
-RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
-  SELECT EXISTS (
+RETURNS BOOLEAN LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  RETURN EXISTS (
     SELECT 1 FROM public.coach_athlete_engagements e
     WHERE e.coach_id   = auth.uid()
       AND e.athlete_id = athlete
       AND e.status     = 'active'
       AND e.can_see_tests = true
-  )
-$$;
+  );
+END $$;
 
 CREATE OR REPLACE FUNCTION public.is_linked_coach_with_plans(athlete UUID)
-RETURNS BOOLEAN LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
-  SELECT EXISTS (
+RETURNS BOOLEAN LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  RETURN EXISTS (
     SELECT 1 FROM public.coach_athlete_engagements e
     WHERE e.coach_id   = auth.uid()
       AND e.athlete_id = athlete
       AND e.status     = 'active'
       AND e.can_create_plans = true
-  )
-$$;
+  );
+END $$;
 
 
 -- ############################################################
@@ -465,21 +485,8 @@ CREATE POLICY comp_self_all  ON public.competitions FOR ALL
 CREATE POLICY comp_coach_read ON public.competitions FOR SELECT
   USING (public.is_linked_coach(athlete_id));
 
--- CHAT
-CREATE POLICY cm_member_read ON public.chat_messages FOR SELECT USING (
-  EXISTS (SELECT 1 FROM public.chat_channels ch
-          JOIN public.coach_athlete_engagements e ON e.id = ch.engagement_id
-          WHERE ch.id = channel_id
-          AND (e.coach_id = auth.uid() OR e.athlete_id = auth.uid()))
-);
-CREATE POLICY cm_member_send ON public.chat_messages FOR INSERT WITH CHECK (
-  sender_id = auth.uid() AND EXISTS (
-    SELECT 1 FROM public.chat_channels ch
-    JOIN public.coach_athlete_engagements e ON e.id = ch.engagement_id
-    WHERE ch.id = channel_id AND ch.is_locked = false
-    AND (e.coach_id = auth.uid() OR e.athlete_id = auth.uid())
-  )
-);
+-- CHAT: Policies nach Migration 3 verschoben (benötigen coach_athlete_engagements)
+-- Siehe 20250413000003_engagements.sql Abschnitt "DEFERRED CHAT POLICIES"
 
 -- ENGAGEMENT_CODES: nur Coach sieht eigene
 CREATE POLICY ec_owner_all ON public.engagement_codes FOR ALL
@@ -537,7 +544,7 @@ CREATE OR REPLACE FUNCTION public.generate_engagement_code(
   p_permissions    JSONB DEFAULT NULL
 )
 RETURNS TABLE(code TEXT, expires_at TIMESTAMPTZ)
-LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, extensions AS $$
 DECLARE
   v_code     TEXT;
   v_expires  TIMESTAMPTZ;

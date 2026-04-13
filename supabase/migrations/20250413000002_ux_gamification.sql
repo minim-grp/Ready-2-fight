@@ -197,9 +197,15 @@ CREATE TABLE public.notifications (
   created_at  TIMESTAMPTZ DEFAULT now()
 );
 
+-- HAND-EDIT: Immutable Wrapper fuer timestamptz→date (Postgres verlangt IMMUTABLE fuer Index-Expressions)
+CREATE OR REPLACE FUNCTION public.utc_date(ts TIMESTAMPTZ)
+RETURNS DATE LANGUAGE sql IMMUTABLE PARALLEL SAFE AS $$
+  SELECT (ts AT TIME ZONE 'UTC')::date
+$$;
+
 -- Unique fuer Data-Expiry: max. 1 Warnung pro User/Tier/Tag
 CREATE UNIQUE INDEX uniq_notifications_expiry_day
-  ON public.notifications (user_id, type, (data->>'tier'), (created_at::date))
+  ON public.notifications (user_id, type, (data->>'tier'), (public.utc_date(created_at)))
   WHERE type = 'data_expiry';
 
 
@@ -468,24 +474,27 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
 
 -- ############################################################
 -- 15. AUTO-SETUP: Settings + Streak bei neuem User
---     Override von handle_new_user aus SQL 1
+--     Override von handle_new_auth_user aus SQL 1
 -- ############################################################
+-- HAND-EDIT: Funktionsname korrigiert (handle_new_user → handle_new_auth_user),
+-- Spalten an Foundation v2 angepasst (name → display_name, role als user_role enum),
+-- Settings + Streaks-Erstellung hinzugefügt.
 
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION public.handle_new_auth_user()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
-  INSERT INTO public.users (id, email, name, role)
+  INSERT INTO public.users (id, email, display_name, role, locale)
   VALUES (
     NEW.id,
     NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'name', 'Unbekannt'),
-    COALESCE(NEW.raw_user_meta_data->>'role', 'athlete')
+    COALESCE(NEW.raw_user_meta_data->>'display_name', split_part(NEW.email, '@', 1)),
+    COALESCE((NEW.raw_user_meta_data->>'role')::public.user_role, 'athlete'),
+    COALESCE((NEW.raw_user_meta_data->>'locale')::public.language, 'de')
   );
   INSERT INTO public.user_settings (user_id) VALUES (NEW.id);
   INSERT INTO public.streaks (user_id) VALUES (NEW.id);
   RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+END $$;
 
 
 -- ############################################################
