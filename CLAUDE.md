@@ -3,8 +3,8 @@ project: Ready 2 Fight
 type: KI-Regelwerk (Claude Coding Guidelines)
 applies_to: Claude Code, Claude in VS Code, jeder LLM-Assistent in diesem Repo
 related_docs:
-  - docs/Ready2Fight_PRD.md   # Was und Warum
-  - docs/ROADMAP.md           # Wann und in welcher Reihenfolge
+  - docs/Ready2Fight_PRD.md # Was und Warum
+  - docs/ROADMAP.md # Wann und in welcher Reihenfolge
   - sql/r2f_sql_1_foundation_v2.sql
 ---
 
@@ -30,17 +30,20 @@ Diese Datei ist die **verbindliche Arbeitsanweisung** für jeden KI-Assistenten,
 ## 1 · Architektur-Leitplanken
 
 ### Schichten
+
 - `auth.*` — Supabase-managed, **niemals** modifizieren oder Trigger drauflegen außer dem dokumentierten `on_auth_user_created`.
 - `public.*` — Domain-Daten, RLS-geschützt, vom Client erreichbar.
 - `private.*` — Server-only (Service-Role). Hier gehören sensible Stammdaten und Job-Queues hin.
 - `audit.*` — Append-only. Kein UPDATE, kein DELETE, kein Grant für `anon`/`authenticated`.
 
 ### Datenflussregel
+
 > Ein Coach sieht Athletendaten **nur** via aktivem Engagement **und** nur die Spalten, für die er die jeweilige `can_see_*`-Permission hat.
 
 Wenn eine neue Coach-sichtbare Tabelle dazukommt, gehört sie hinter eine passende `is_linked_coach_with_*()`-Variante. Falls die nötige Variante noch nicht existiert: zuerst die Helper-Funktion ergänzen, dann die Policy.
 
 ### Edge Functions vs. RPCs
+
 - **RPC (`SECURITY DEFINER` Postgres function)**: für alles, was atomar in einer Transaktion laufen muss und nur DB-Logik braucht (Engagement-Code-Redeem, XP-Vergabe, Account-Löschung-Request).
 - **Edge Function (TypeScript/Deno)**: für alles mit externer I/O (E-Mail-Versand, GDPR-Export-ZIP-Bauen, später LLM-Calls), für Cron-Jobs, und für CRS-Score-Berechnung (komplex genug, dass JS lesbarer ist als plpgsql).
 
@@ -49,6 +52,7 @@ Wenn eine neue Coach-sichtbare Tabelle dazukommt, gehört sie hinter eine passen
 ## 2 · Coding-Standards
 
 ### Allgemein
+
 - **TypeScript strict mode**, kein `any` ohne Kommentar mit Begründung.
 - **Keine Magic Strings** für Status, Rollen, Event-Types — nutze die Postgres-Enums oder generierte TS-Types aus `supabase gen types typescript`.
 - **Funktionen mit ≥ 3 Parametern** nehmen ein Options-Objekt.
@@ -56,6 +60,7 @@ Wenn eine neue Coach-sichtbare Tabelle dazukommt, gehört sie hinter eine passen
 - **Kein `console.log` in committetem Code.** Nutze den Logger-Wrapper (`lib/logger.ts`) — der respektiert das `LOG_LEVEL`-Env und scrubbt PII automatisch.
 
 ### Frontend (PWA, mobile-first für Athleten)
+
 - **React + Vite + TanStack Query + Zustand** für State, **Tailwind** für Styling, **Workbox** für Offline.
 - **Komponenten ≤ 150 Zeilen.** Wenn länger: in Sub-Komponenten aufteilen.
 - **Daten-Fetching ausschließlich über TanStack-Query-Hooks** in `hooks/queries/`. Keine `supabase.from(...)` Aufrufe direkt aus Komponenten.
@@ -63,6 +68,7 @@ Wenn eine neue Coach-sichtbare Tabelle dazukommt, gehört sie hinter eine passen
 - **Offline-Verhalten**: Daily Tracking ist die einzige offline-fähige Funktion. Alle anderen Screens zeigen das `<OfflineBanner />` und disablen Aktionen.
 
 ### Backend (Supabase + Postgres)
+
 - **Migrations über `supabase db diff`** generieren, Hand-Edits dokumentieren.
 - **Jede Migration ist idempotent** (`CREATE TABLE IF NOT EXISTS`, `DROP POLICY IF EXISTS … CREATE POLICY …`).
 - **Generated Columns** nutzen, wo Werte deterministisch ableitbar sind (sRPE ist das Vorbild).
@@ -73,15 +79,18 @@ Wenn eine neue Coach-sichtbare Tabelle dazukommt, gehört sie hinter eine passen
 ## 3 · Sicherheits-Regeln (über die Goldenen Regeln hinaus)
 
 ### Authentifizierung
+
 - Re-Auth (frische Session ≤ 5 min) ist Pflicht für: Account löschen, E-Mail ändern, Engagement beenden, Health-Record-Freigabe widerrufen, alle Permissions ändern.
 - 2FA (TOTP) ist Phase 2. Bis dahin: starke Passwort-Policy (≥ 12 Zeichen) + Re-Auth.
 
 ### Eingaben
+
 - **Whitelist statt Blacklist** für alle Enum-artigen Felder.
 - **Längen-Limits** auf jedem TEXT-Feld (`CHECK (length(x) BETWEEN 1 AND N)`). Chat-Bodys: 4000 Zeichen.
 - **Keine User-Input direkt in dynamisches SQL.** Parametrisieren oder Format-String mit `%I`/`%L` in plpgsql.
 
 ### Geheimnisse
+
 - **Keine Secrets in `git`.** `.env` ist gitignored, `.env.example` enthält nur Variable-Namen.
 - **Service-Role-Key** existiert ausschließlich auf dem Server (Edge Functions). Wenn du ihn im Frontend siehst: Critical Bug, sofort melden.
 - **API-Keys von Drittanbietern** (LLM-Provider, E-Mail-Versand) leben in Supabase Vault, niemals in Code oder Env-Files im Repo.
@@ -90,14 +99,14 @@ Wenn eine neue Coach-sichtbare Tabelle dazukommt, gehört sie hinter eine passen
 
 ## 4 · Tests (CI-Pflicht)
 
-| Kategorie | Was | Tool |
-|---|---|---|
-| RLS-Tests | Jede Policy hat mindestens einen positiven und einen negativen Test (richtiger User darf, fremder User darf nicht) | `pgTAP` oder `supabase test db` |
-| Trigger-Tests | XP-Auto-Update, Streak-Reset, sRPE-Generated, on_auth_user_created | `pgTAP` |
-| Unit-Tests | Pure Functions in `lib/`, alle CRS-Score-Berechnungen | Vitest |
-| Component-Tests | Jede Komponente in `components/` mit Loading/Error/Empty-Variante | Vitest + Testing Library |
-| E2E | Die zehn Critical Flows aus ROADMAP §3 | Playwright |
-| Lighthouse | Accessibility ≥ 90, Performance ≥ 80 (Mobile) | Lighthouse-CI |
+| Kategorie       | Was                                                                                                                | Tool                            |
+| --------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------- |
+| RLS-Tests       | Jede Policy hat mindestens einen positiven und einen negativen Test (richtiger User darf, fremder User darf nicht) | `pgTAP` oder `supabase test db` |
+| Trigger-Tests   | XP-Auto-Update, Streak-Reset, sRPE-Generated, on_auth_user_created                                                 | `pgTAP`                         |
+| Unit-Tests      | Pure Functions in `lib/`, alle CRS-Score-Berechnungen                                                              | Vitest                          |
+| Component-Tests | Jede Komponente in `components/` mit Loading/Error/Empty-Variante                                                  | Vitest + Testing Library        |
+| E2E             | Die zehn Critical Flows aus ROADMAP §3                                                                             | Playwright                      |
+| Lighthouse      | Accessibility ≥ 90, Performance ≥ 80 (Mobile)                                                                      | Lighthouse-CI                   |
 
 **Coverage-Ziel**: 80 % auf `lib/`, 100 % auf RLS-Policies. Für UI-Komponenten reicht visueller Storybook-Test plus die drei States.
 

@@ -20,28 +20,33 @@ Schritt-für-Schritt-Plan vom leeren Repo bis zur vollständigen App mit KI-Funk
 **Ziel**: Repo, CI, Supabase-Projekt, Foundation-Schema stehen. Ohne Feature-Code.
 
 ### 0.1 Repo & Tooling
+
 - Monorepo mit `apps/web` (PWA) und `supabase/` (Migrations + Edge Functions).
 - TypeScript strict, ESLint, Prettier, Husky pre-commit, Conventional-Commits-Linter.
 - `.env.example` mit allen Variablen, `.env` gitignored.
 - VS-Code-Workspace-Settings im Repo: empfohlene Extensions, Format-on-Save, ESLint auf Auto-Fix.
 
 ### 0.2 Supabase-Projekt
+
 - Zwei Environments: `dev` (lokal via Supabase CLI) und `staging` (Supabase Cloud, Region `eu-central-1`).
 - Production-Projekt **noch nicht** anlegen — kommt in Phase 1 Schritt 1.10.
 - Auth-Provider: nur E-Mail+Passwort. Confirm-E-Mail aktiviert.
 - Storage-Buckets: `avatars` (public), `health_documents` (private), `plan_attachments` (private), `crs_evidence` (private).
 
 ### 0.3 Foundation-Migrationen
+
 - `r2f_sql_1_foundation_v2.sql` einspielen (existiert bereits).
 - `r2f_sql_2_ux.sql` (Gamification) einspielen.
 - `r2f_sql_3_engagements.sql` einspielen — **vorher** den Stalking-Vektor entfernen, falls noch nicht geschehen (Code-Generierung über die RPC aus File 1, nicht aus File 3).
 - Alle Migrations laufen idempotent durch, RLS ist überall an.
 
 ### 0.4 CI-Pipeline
+
 - GitHub Actions: lint → typecheck → unit-tests → pgTAP → build → Lighthouse auf Preview-Deploy.
 - Branch-Protection auf `main`: PR-Review + grüner CI-Status Pflicht.
 
 ### Done-Kriterium Phase 0
+
 > `supabase db reset && supabase test db && pnpm test && pnpm build` läuft lokal komplett grün, CI auf einem Test-PR ist grün, Staging-DB ist mit allen drei Migrations gefüllt.
 
 ---
@@ -139,6 +144,7 @@ Schritt-für-Schritt-Plan vom leeren Repo bis zur vollständigen App mit KI-Funk
 **1.45** Closed-Beta-Launch mit den ersten 30 Coaches.
 
 ### Done-Kriterium Phase 1
+
 > Die vier MVP-Erfolgskriterien aus PRD §11 sind nach 4 Wochen Live-Betrieb erfüllt: ≥80% Onboarding-Completion, ≥50% First-CRS innerhalb 7 Tagen, D7-Retention ≥40%, ≥35% aktive Coach-Engagements.
 
 ---
@@ -207,6 +213,7 @@ Schritt-für-Schritt-Plan vom leeren Repo bis zur vollständigen App mit KI-Funk
 **2.33** Phase-2-Erfolgsmetriken: KI-Adoption ≥30% der Coaches im ersten Monat, Akzeptanzrate Insights ≥60%.
 
 ### Done-Kriterium Phase 2
+
 > Die vier KI-Features sind live, `ai_consent`-Opt-in-Rate liegt über 40%, kein KI-Feature blockiert je einen Kern-Flow, die Phase-2-Erfolgsmetriken sind erreicht.
 
 ---
@@ -221,6 +228,7 @@ Schritt-für-Schritt-Plan vom leeren Repo bis zur vollständigen App mit KI-Funk
 **3.4** Natural Language Tracking. Athlet diktiert, LLM mappt auf strukturierte Felder. Confirmation-UI vor Speichern.
 
 ### Done-Kriterium Phase 3
+
 > Alle vier Features sind live, der Verletzungs-Risiko-Indikator hat eine dokumentierte False-Positive-Rate, MDR-Einschätzung liegt schriftlich vor.
 
 ---

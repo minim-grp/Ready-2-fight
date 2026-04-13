@@ -25,7 +25,7 @@ hinweise_an_claude:
 
 # Ready 2 Fight — Product Requirements Document
 
-> **Combat Ready. By Design.**  Konsolidierter MVP-Scope mit Compliance-Layer und KI-Roadmap.
+> **Combat Ready. By Design.** Konsolidierter MVP-Scope mit Compliance-Layer und KI-Roadmap.
 
 ## 01 · Vision & Zielsetzung
 
@@ -86,7 +86,7 @@ Der MVP gilt als erfolgreich, wenn nach vier Wochen Live-Betrieb folgende Kriter
 Vier exemplarische Nutzerprofile als Referenz für Produkt- und Designentscheidungen.
 
 | **PERSONA**                    | **BESCHREIBUNG**                                                              | **HAUPTBEDÜRFNIS**                             |
-|--------------------------------|-------------------------------------------------------------------------------|------------------------------------------------|
+| ------------------------------ | ----------------------------------------------------------------------------- | ---------------------------------------------- |
 | Lena, 22 — Amateur-Kickboxerin | Trainiert 5×/Woche, plant 3 Wettkämpfe/Jahr. Will Fortschritt messbar machen. | Tracking, CRS, Wettkampfvorbereitung           |
 | Marcus, 38 — MMA-Coach         | Betreut 12 Athleten parallel, jongliert Pläne in Excel.                       | Übersicht, strukturierte Plan-Erstellung, Chat |
 | Tom, 31 — Pro-Boxer & Trainer  | Eigene Karriere plus 4 Schützlinge.                                           | Rolle Beides — beide Sichten in einer App      |
@@ -99,7 +99,7 @@ Vier exemplarische Nutzerprofile als Referenz für Produkt- und Designentscheidu
 Drei Rollen mit klar abgegrenzten Funktionsumfängen: Athlet, Coach, Beides. Die Rolle wird in der Datenbank als Enum gespeichert. Navigation, Dashboard und zugängliche Routen werden serverseitig gefiltert — nicht nur clientseitig.
 
 | **ROLLE** | **WER**                   | **KERNFUNKTIONEN**                                                           |
-|-----------|---------------------------|------------------------------------------------------------------------------|
+| --------- | ------------------------- | ---------------------------------------------------------------------------- |
 | Athlet    | Aktiver Sportler          | Eigenes Tracking, CRS-Test, Wettkampfplanung, Plan-Ansicht, Chat mit Coach   |
 | Coach     | Trainer                   | Athleten-Verwaltung, Plan-Erstellung & -Zuweisung, Wettkampfverwaltung, Chat |
 | Beides    | Aktiver Kämpfer + Trainer | Vereint beide Funktionsumfänge in einer Ansicht                              |
@@ -139,7 +139,7 @@ Engagement-Codes sind so gestaltet, dass sie keinen Stalking-Vektor öffnen. Cod
 Tägliches Selbstauskunftsformular des Athleten.
 
 | **FELD**             | **PFLICHT** | **WERTE**                                               |
-|----------------------|-------------|---------------------------------------------------------|
+| -------------------- | ----------- | ------------------------------------------------------- |
 | Schlafqualität       | ja          | gut / mittel / schlecht                                 |
 | Körpergewicht (kg)   | ja          | 30–300                                                  |
 | Stimmung             | ja          | gut / mittel / schlecht                                 |
@@ -163,7 +163,7 @@ Wenn Training, Dauer und RPE für einen Tag erfasst sind, berechnet das System a
 Standardisierter Fitnesstest zur Messung der körperlichen Grundfitness im Kampfsportkontext. Fünf Übungen, jeweils 60 Sekunden.
 
 | **\#** | **ÜBUNG**  | **MESSGRÖSSE**         | **FÄHIGKEIT**           |
-|--------|------------|------------------------|-------------------------|
+| ------ | ---------- | ---------------------- | ----------------------- |
 | 1      | Burpees    | Wiederholungen         | Ganzkörperausdauer      |
 | 2      | Air Squats | Wiederholungen         | Beinkraft, Explosivität |
 | 3      | Push-ups   | saubere Wiederholungen | Oberkörperkraft         |
@@ -171,12 +171,12 @@ Standardisierter Fitnesstest zur Messung der körperlichen Grundfitness im Kampf
 | 5      | High Knees | Bodenkontakte          | Cardio, Schnelligkeit   |
 
 > **TRANSPARENZ-HINWEIS IM PRODUKT**  
-> *Der CRS misst kampfsportrelevante Grundfitness, keine disziplinspezifische Kampfbereitschaft. Disziplinspezifische Tests folgen in Phase 2. Die genaue Berechnungsformel ist in Anhang B dieses Dokuments und in der App unter Hilfe → CRS-Methodik öffentlich einsehbar.*
+> _Der CRS misst kampfsportrelevante Grundfitness, keine disziplinspezifische Kampfbereitschaft. Disziplinspezifische Tests folgen in Phase 2. Die genaue Berechnungsformel ist in Anhang B dieses Dokuments und in der App unter Hilfe → CRS-Methodik öffentlich einsehbar._
 
 ### Ranking-System
 
 | **RANG** | **CRS** | **NAME**       |
-|----------|---------|----------------|
+| -------- | ------- | -------------- |
 | S        | 95–100  | Shadow Monarch |
 | A        | 80–94   | Hunter Elite   |
 | B        | 65–79   | Rising Fighter |
@@ -213,7 +213,7 @@ Athlet dokumentiert Verletzungen, Allergien, Medikamente. Freigabe an Coach pro 
 **Funktionsmatrix**
 
 | **FUNKTION**                              | **ATHLET** | **COACH** | **BEIDES** |
-|-------------------------------------------|------------|-----------|------------|
+| ----------------------------------------- | ---------- | --------- | ---------- |
 | Eigenes Athleten-Dashboard                | ✓          | —         | ✓          |
 | Coach-Dashboard mit Wochenkalender        | —          | ✓         | ✓          |
 | Daily Tracking (offline-fähig)            | ✓          | —         | ✓          |
@@ -249,7 +249,7 @@ Letzter CRS mit Rang, Score, Archetyp und fünf Einzelwerten, CRS-Verlaufsdiagra
 ## 05 · Onboarding
 
 > **MINDESTALTER**  
-> *Das Mindestalter für die Nutzung von Ready 2 Fight liegt bei 16 Jahren. Diese Festlegung folgt Art. 8 DSGVO und vermeidet einen verpflichtenden Parental-Consent-Workflow. Die Altersangabe wird beim Onboarding abgefragt; Geburtsdaten unter 16 Jahren werden abgewiesen.*
+> _Das Mindestalter für die Nutzung von Ready 2 Fight liegt bei 16 Jahren. Diese Festlegung folgt Art. 8 DSGVO und vermeidet einen verpflichtenden Parental-Consent-Workflow. Die Altersangabe wird beim Onboarding abgefragt; Geburtsdaten unter 16 Jahren werden abgewiesen._
 
 **Athlet**
 
@@ -286,7 +286,7 @@ Letzter CRS mit Rang, Score, Archetyp und fünf Einzelwerten, CRS-Verlaufsdiagra
 **Tech-Stack**
 
 | **SCHICHT**   | **TECHNOLOGIE**                        | **ZWECK**                             |
-|---------------|----------------------------------------|---------------------------------------|
+| ------------- | -------------------------------------- | ------------------------------------- |
 | Frontend      | Next.js (React) auf Vercel             | UI, SSR, Edge-Auslieferung, PWA       |
 | Backend / API | Supabase (PostgREST)                   | API, Auth, RLS                        |
 | Datenbank     | PostgreSQL via Supabase (eu-central-1) | Persistenz, Trigger, RPC              |
@@ -304,7 +304,7 @@ Browser ⇄ Vercel-Edge ⇄ Supabase-API ⇄ PostgreSQL. Jeder Request: TLS in T
 **Umgebungsvariablen**
 
 | **VARIABLE**                  | **SICHTBARKEIT** | **ZWECK**                         |
-|-------------------------------|------------------|-----------------------------------|
+| ----------------------------- | ---------------- | --------------------------------- |
 | NEXT_PUBLIC_SUPABASE_URL      | öffentlich       | Projekt-URL                       |
 | NEXT_PUBLIC_SUPABASE_ANON_KEY | öffentlich       | API-Key, RLS-gefiltert            |
 | SUPABASE_SERVICE_ROLE_KEY     | nur Server       | Voll-Rechte für Server-Funktionen |
@@ -314,7 +314,7 @@ Browser ⇄ Vercel-Edge ⇄ Supabase-API ⇄ PostgreSQL. Jeder Request: TLS in T
 Vereinfachte Übersicht der Kerntabellen. Alle Tabellen verfügen über created_at und updated_at sowie aktivierte Row-Level Security.
 
 | **TABELLE**          | **SCHLÜSSELFELDER**                                                                                                                                      | **STATUS** |
-|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|------------|
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
 | users                | id, email, role, deleted_at, anonymized                                                                                                                  | Kern       |
 | athlete_profiles     | user_id, dob, gender, height, weight, primary_sport, secondary_sport, activity_level                                                                     | Kern       |
 | coach_profiles       | user_id, name, bio                                                                                                                                       | Kern       |
@@ -340,7 +340,7 @@ Technische und organisatorische Maßnahmen nach Art. 32 DSGVO. Die Härtungen au
 **Schutzmaßnahmen**
 
 | **KATEGORIE**         | **MASSNAHME**                                                                             |
-|-----------------------|-------------------------------------------------------------------------------------------|
+| --------------------- | ----------------------------------------------------------------------------------------- |
 | Verschlüsselung       | TLS in Transit, AES-256 at Rest                                                           |
 | Authentifizierung     | E-Mail-Verifizierung, bcrypt-Hashing, JWT-Sessions (1h Access, 14d Refresh)               |
 | Re-Auth               | Passwort-Eingabe bei sensiblen Aktionen: Konto löschen, E-Mail ändern, Engagement beenden |
@@ -376,7 +376,7 @@ Acht Event-Typen werden geloggt — bewusst minimal, um Pflege und Datenschutz i
 **Bedrohungsmodell (OWASP Top 10)**
 
 | **BEDROHUNG**           | **RISIKO** | **GEGENMASSNAHME**                                            |
-|-------------------------|------------|---------------------------------------------------------------|
+| ----------------------- | ---------- | ------------------------------------------------------------- |
 | Unbefugter Datenzugriff | hoch       | Row-Level Security                                            |
 | Passwort-Diebstahl      | hoch       | bcrypt + E-Mail-Verifizierung, Re-Auth bei sensiblen Aktionen |
 | Session-Hijacking       | mittel     | Kurzlebige JWT-Tokens                                         |
@@ -392,7 +392,7 @@ Acht Event-Typen werden geloggt — bewusst minimal, um Pflege und Datenschutz i
 **Pre-Launch-Checkliste Sicherheit**
 
 | **MASSNAHME**                                  | **PRIORITÄT** | **STATUS** |
-|------------------------------------------------|---------------|------------|
+| ---------------------------------------------- | ------------- | ---------- |
 | Server-seitige Input-Validierung (alle Felder) | kritisch      | MVP        |
 | Audit-Logging implementiert                    | kritisch      | MVP        |
 | Re-Auth bei sensiblen Aktionen                 | kritisch      | MVP        |
@@ -410,7 +410,7 @@ Acht Event-Typen werden geloggt — bewusst minimal, um Pflege und Datenschutz i
 **Rechtsgrundlagen**
 
 | **ARTIKEL**                               | **ANWENDUNGSFALL**                                                              |
-|-------------------------------------------|---------------------------------------------------------------------------------|
+| ----------------------------------------- | ------------------------------------------------------------------------------- |
 | Art. 6 (1) b — Vertragserfüllung          | Registrierung, Dashboard, Tracking-Speicherung, CRS-Berechnung, Plan-Verwaltung |
 | Art. 6 (1) a — Einwilligung               | Optionale Coach-Datenfreigaben                                                  |
 | Art. 9 (2) a — Ausdrückliche Einwilligung | Verarbeitung von Gesundheitsdaten                                               |
@@ -419,7 +419,7 @@ Acht Event-Typen werden geloggt — bewusst minimal, um Pflege und Datenschutz i
 **Verzeichnis der Verarbeitungstätigkeiten**
 
 | **TÄTIGKEIT**              | **DATENKATEGORIEN**                                  | **RECHTSGRUNDLAGE** | **AUFBEWAHRUNG**               |
-|----------------------------|------------------------------------------------------|---------------------|--------------------------------|
+| -------------------------- | ---------------------------------------------------- | ------------------- | ------------------------------ |
 | Registrierung & Auth       | E-Mail, Name, Passwort-Hash, Rolle                   | Art. 6 (1) b        | bis Kontolöschung              |
 | Athleten-Profil            | DOB, Geschlecht, Größe, Gewicht, Sportarten          | 6 (1) b, 9 (2) a    | bis Kontolöschung              |
 | Daily Tracking             | Schlaf, Gewicht, Stimmung, Wasser, Zustand, Training | 6 (1) b, 9 (2) a    | 24 Monate, dann Anonymisierung |
@@ -433,7 +433,7 @@ Acht Event-Typen werden geloggt — bewusst minimal, um Pflege und Datenschutz i
 **Betroffenenrechte — vollständig im MVP**
 
 | **RECHT**                 | **ARTIKEL** | **UMSETZUNG**                                                              |
-|---------------------------|-------------|----------------------------------------------------------------------------|
+| ------------------------- | ----------- | -------------------------------------------------------------------------- |
 | Auskunft                  | 15          | Datenexport-Endpoint                                                       |
 | Berichtigung              | 16          | In-App-Bearbeitung von Profil & Tracking                                   |
 | Löschung                  | 17          | Self-Service mit 14-Tage-Grace-Period                                      |
@@ -453,7 +453,7 @@ Vollständiges Hard-Delete würde Foreign-Key-Beziehungen zerstören (Coach hat 
 **Auftragsverarbeitung**
 
 | **DIENSTLEISTER** | **ZWECK**                          | **STANDORT**                                       | **AVV-STATUS** |
-|-------------------|------------------------------------|----------------------------------------------------|----------------|
+| ----------------- | ---------------------------------- | -------------------------------------------------- | -------------- |
 | Supabase Inc.     | Datenbank, Auth, Realtime, Storage | EU (eu-central-1, Frankfurt) — vertraglich fixiert | vor Launch     |
 | Vercel Inc.       | Hosting, CDN                       | EU-Region erzwungen                                | vor Launch     |
 
@@ -462,7 +462,7 @@ Beide Anbieter sind US-Unternehmen. Standardvertragsklauseln (SCCs) und EU-US Da
 **DSFA — Risikobewertung**
 
 | **RISIKO**                          | **WAHRSCHEINLICHKEIT** | **SCHWERE** | **MASSNAHME**                                                     |
-|-------------------------------------|------------------------|-------------|-------------------------------------------------------------------|
+| ----------------------------------- | ---------------------- | ----------- | ----------------------------------------------------------------- |
 | Unbefugter Zugriff Gesundheitsdaten | niedrig                | hoch        | RLS, AES-256, granulare Berechtigungen                            |
 | Datenverlust                        | niedrig                | hoch        | Tägliche Backups, PITR, dokumentiertes Restore-Runbook            |
 | Zweckentfremdung durch Coach        | mittel                 | mittel      | Granulare Berechtigungen, Widerruf jederzeit                      |
@@ -473,7 +473,7 @@ Beide Anbieter sind US-Unternehmen. Standardvertragsklauseln (SCCs) und EU-US Da
 **Löschkonzept**
 
 | **EREIGNIS**                                  | **AKTION**                                                       |
-|-----------------------------------------------|------------------------------------------------------------------|
+| --------------------------------------------- | ---------------------------------------------------------------- |
 | Konto gelöscht                                | Hard-Delete der Daten, Anonymisierung des users-Datensatzes      |
 | Engagement endet                              | Coach-Zugriff sofort entzogen via Trigger, Athletendaten bleiben |
 | Tracking älter als 24 Monate                  | Automatische Anonymisierung in daily_tracking_archive            |
@@ -487,7 +487,7 @@ Beide Anbieter sind US-Unternehmen. Standardvertragsklauseln (SCCs) und EU-US Da
 **Coach-Athlet-Datenfluss**
 
 | **DATENTYP**                                   | **BERECHTIGUNG**           |
-|------------------------------------------------|----------------------------|
+| ---------------------------------------------- | -------------------------- |
 | Daily Tracking (7 Tage rollierend)             | can_see_tracking           |
 | Fitness-Test (CRS, Rang, Einzelwerte, Verlauf) | can_see_tests              |
 | Ernährung (Phase 2)                            | can_see_meals              |
@@ -536,7 +536,7 @@ Nur das Daily-Tracking ist offline-fähig. Bei fehlender Verbindung wird der Sub
 **Notifications — drei Trigger**
 
 | **TRIGGER**                                                    | **KANAL**     | **FREQUENZ**                             |
-|----------------------------------------------------------------|---------------|------------------------------------------|
+| -------------------------------------------------------------- | ------------- | ---------------------------------------- |
 | Tracking-Reminder bei fehlendem Eintrag bis 20:00 lokaler Zeit | E-Mail        | max. 1× pro Tag, im Profil deaktivierbar |
 | Neue Chat-Nachricht                                            | E-Mail-Digest | max. 1× pro Stunde                       |
 | Neuer Trainingsplan zugewiesen                                 | E-Mail        | bei jedem Ereignis                       |
@@ -600,7 +600,7 @@ Komplett kostenlos. Begründung: Wir brauchen Daten, Trust und Use-Case-Validier
 **Pricing Phase 2**
 
 | **PLAN**     | **ZIELGRUPPE** | **PREIS**  | **LIMIT**                      |
-|--------------|----------------|------------|--------------------------------|
+| ------------ | -------------- | ---------- | ------------------------------ |
 | Athlete      | Einzelnutzer   | kostenlos  | unbegrenzt eigene Daten        |
 | Trainer      | Coaches        | 19 €/Monat | unbegrenzte Athleten ab dem 6. |
 | Trainer Lite | Hobby-Coaches  | kostenlos  | bis zu 5 Athleten              |
@@ -610,7 +610,7 @@ Komplett kostenlos. Begründung: Wir brauchen Daten, Trust und Use-Case-Validier
 Vergleich von Ready 2 Fight mit den heute am Markt etablierten Werkzeugen.
 
 | **KRITERIUM**                    | **R2F**          | **TRAININGPEAKS** | **TRAINERIZE** | **EXCEL/WHATSAPP** |
-|----------------------------------|------------------|-------------------|----------------|--------------------|
+| -------------------------------- | ---------------- | ----------------- | -------------- | ------------------ |
 | Kampfsport-spezifisch            | ✓                | —                 | —              | —                  |
 | CRS / Combat Score               | ✓                | —                 | —              | —                  |
 | Daily Tracking integriert        | ✓                | ✓                 | ✓              | mühsam             |
@@ -625,7 +625,7 @@ Verteidigungsfähigkeit (Moat): Kampfsport-spezifische Domain-Tiefe (CRS, Wettka
 ## 14 · KI-Funktionalitäten
 
 > **WICHTIG**  
-> *KI-Funktionalitäten sind explizit nicht Teil des MVP. Dieses Kapitel verankert sie konzeptionell, damit Datenmodell und Architektur sie ohne strukturelle Migration aufnehmen können. Die erste KI-Funktion ist für Phase 2 vorgesehen.*
+> _KI-Funktionalitäten sind explizit nicht Teil des MVP. Dieses Kapitel verankert sie konzeptionell, damit Datenmodell und Architektur sie ohne strukturelle Migration aufnehmen können. Die erste KI-Funktion ist für Phase 2 vorgesehen._
 
 **Leitprinzipien**
 
@@ -650,7 +650,7 @@ Verteidigungsfähigkeit (Moat): Kampfsport-spezifische Domain-Tiefe (CRS, Wettka
 Die folgende Tabelle skizziert die geplanten KI-Funktionen mit Phase und Implementierungs-Strategie. Sie ist nicht erschöpfend, dient aber als Anker für Architektur-Entscheidungen.
 
 | **FEATURE**                        | **PHASE** | **STRATEGIE**                                                                                                                               |
-|------------------------------------|-----------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | Tracking-Insights                  | 2         | Wöchentliche LLM-generierte Zusammenfassung der Tracking-Daten ("Du hast nach Sparring-Tagen schlechter geschlafen"). On-demand pro Athlet. |
 | Coach Co-Pilot                     | 2         | Chat-Assistent im Coach-Dashboard ("Welche Athleten brauchen diese Woche Aufmerksamkeit?"). LLM mit RAG über Coach-eigene Daten.            |
 | Plan-Generator                     | 2         | Coach gibt Ziel und Constraints ein, KI generiert Plan-Entwurf, den der Coach editiert und zuweist. Mensch-im-Loop.                         |
@@ -679,7 +679,7 @@ Damit Phase-2-KI-Features ohne Datenmodell-Migration ergänzt werden können, h�
 **Kostenmodell KI (Schätzung Phase 2)**
 
 | **FEATURE**       | **MODELL**                    | **AUFRUFE PRO NUTZER/MONAT** | **KOSTEN/NUTZER/MONAT (GESCHÄTZT)** |
-|-------------------|-------------------------------|------------------------------|-------------------------------------|
+| ----------------- | ----------------------------- | ---------------------------- | ----------------------------------- |
 | Tracking-Insights | Claude Haiku oder GPT-4o-mini | 4                            | ~ 0,02 €                            |
 | Coach Co-Pilot    | Claude Sonnet                 | 20 (nur Coaches)             | ~ 0,80 € pro Coach                  |
 | Plan-Generator    | Claude Sonnet                 | 5 (nur Coaches)              | ~ 0,50 € pro Coach                  |
@@ -818,7 +818,7 @@ Verbleibende Entscheidungen, die im Verlauf der Implementierung geklärt werden 
 ## 17 · Glossar
 
 | **BEGRIFF**    | **BEDEUTUNG**                                                              |
-|----------------|----------------------------------------------------------------------------|
+| -------------- | -------------------------------------------------------------------------- |
 | AES-256        | Verschlüsselungsstandard mit 256-Bit-Schlüssel                             |
 | Archetyp       | Stärkenprofil eines Athleten (Tank, Assassin, Guardian, Berserker, Rookie) |
 | AVV            | Auftragsverarbeitungsvertrag (Art. 28 DSGVO)                               |
@@ -864,7 +864,7 @@ ziel = base_ziel × gewicht_faktor × alter_faktor × geschlecht_faktor
 **Basis-Zielwerte**
 
 | **ÜBUNG**  | **BASIS-ZIELWERT** | **EINHEIT**                    |
-|------------|--------------------|--------------------------------|
+| ---------- | ------------------ | ------------------------------ |
 | Burpees    | 25                 | Wiederholungen in 60 s         |
 | Air Squats | 50                 | Wiederholungen in 60 s         |
 | Push-ups   | 35                 | saubere Wiederholungen in 60 s |
@@ -890,7 +890,7 @@ CRS = Mittelwert der fünf Einzelscores, gerundet auf ganze Zahl. Alle fünf Üb
 Der Archetyp ergibt sich aus den zwei stärksten Einzelscores:
 
 | **STÄRKSTE 2 ÜBUNGEN**     | **ARCHETYP** |
-|----------------------------|--------------|
+| -------------------------- | ------------ |
 | Plank + Squats             | Tank         |
 | High Knees + Burpees       | Assassin     |
 | Plank + Push-ups           | Guardian     |

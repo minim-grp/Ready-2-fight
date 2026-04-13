@@ -1,0 +1,14 @@
+node_modules
+dist
+.next
+supabase/.temp
+supabase/migrations
+pnpm-lock.yaml
+
+# Tool-generated directories (not project code)
+.claude/
+.claude-flow/
+.swarm/
+graphify-out/
+raw/
+sql/
