@@ -1,21 +1,24 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import { useAuthStore } from "../../stores/auth";
-
-const navItems = [
-  { to: "/app/dashboard", label: "Heute" },
-  { to: "/app/tracking", label: "Tracking" },
-  { to: "/app/engagements", label: "Coaches" },
-  { to: "/app/settings", label: "Profil" },
-];
+import { useProfile } from "../../hooks/queries/useProfile";
+import { useModeStore, type ActiveMode } from "../../stores/mode";
+import { BottomNav } from "./BottomNav";
+import { navItemsFor } from "./navItems";
 
 export function AppLayout() {
   const user = useAuthStore((s) => s.user);
   const signOut = useAuthStore((s) => s.signOut);
+  const mode = useModeStore((s) => s.mode);
+  const setMode = useModeStore((s) => s.setMode);
+  const profile = useProfile();
+  const role = profile.data?.role;
+  const items = navItemsFor(role);
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-950 text-slate-100">
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-800 bg-slate-900/80 px-4 py-3 backdrop-blur">
+      <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-800 bg-slate-900/80 px-4 py-3 backdrop-blur">
         <span className="text-sm font-semibold tracking-wide">Ready 2 Fight</span>
+        {role === "both" && <ModeToggle mode={mode} onChange={setMode} />}
         <button
           type="button"
           onClick={() => void signOut()}
@@ -30,27 +33,52 @@ export function AppLayout() {
         <Outlet />
       </main>
 
-      <nav
-        className="fixed inset-x-0 bottom-0 z-10 border-t border-slate-800 bg-slate-900/95 backdrop-blur"
-        aria-label="Hauptnavigation"
-      >
-        <ul className="mx-auto grid max-w-md grid-cols-4">
-          {navItems.map((item) => (
-            <li key={item.to}>
-              <NavLink
-                to={item.to}
-                className={({ isActive }) =>
-                  `flex flex-col items-center gap-1 py-3 text-xs ${
-                    isActive ? "text-white" : "text-slate-400"
-                  }`
-                }
-              >
-                {item.label}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      <BottomNav items={items} />
     </div>
+  );
+}
+
+type ModeToggleProps = {
+  mode: ActiveMode;
+  onChange: (mode: ActiveMode) => void;
+};
+
+function ModeToggle({ mode, onChange }: ModeToggleProps) {
+  return (
+    <div
+      role="group"
+      aria-label="Modus"
+      className="flex rounded-full border border-slate-700 bg-slate-800 p-0.5 text-xs"
+    >
+      <ToggleButton active={mode === "athlete"} onClick={() => onChange("athlete")}>
+        Athlet
+      </ToggleButton>
+      <ToggleButton active={mode === "coach"} onClick={() => onChange("coach")}>
+        Coach
+      </ToggleButton>
+    </div>
+  );
+}
+
+function ToggleButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={`rounded-full px-3 py-1 transition ${
+        active ? "bg-slate-100 text-slate-900" : "text-slate-300 hover:text-white"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
