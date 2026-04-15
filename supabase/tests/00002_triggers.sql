@@ -11,7 +11,7 @@
 
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap;
-SELECT plan(14);
+SELECT plan(18);
 
 -- ============================================================
 -- HELPERS
@@ -71,13 +71,8 @@ SELECT tests.create_user('22222222-2222-2222-2222-222222222222', 'coach_t1@test.
 SELECT tests.create_user('33333333-3333-3333-3333-333333333333', 'ath_t2@test.r2f',    'athlete', 'Trigger Ath2');
 SELECT tests.create_user('66666666-6666-6666-6666-666666666666', 'both_t1@test.r2f',   'both',    'Both User');
 
-INSERT INTO public.athlete_profiles (id) VALUES
-  ('11111111-1111-1111-1111-111111111111'),
-  ('33333333-3333-3333-3333-333333333333'),
-  ('66666666-6666-6666-6666-666666666666');
-INSERT INTO public.coach_profiles (id) VALUES
-  ('22222222-2222-2222-2222-222222222222'),
-  ('66666666-6666-6666-6666-666666666666');
+-- Profile werden vom handle_new_auth_user-Trigger automatisch angelegt
+-- (siehe Migration 20260414000001_profile_autocreate.sql).
 
 
 -- ############################################################
@@ -252,6 +247,48 @@ SELECT tests.throws_with_state(NULL,
 SELECT has_trigger(
   'public', 'users', 'trg_users_updated',
   'T14 updated_at Trigger auf users-Tabelle registriert');
+
+
+-- ############################################################
+--  T15-T18: PROFILE AUTO-CREATE (Trigger: handle_new_auth_user)
+--  Migration 20260414000001
+-- ############################################################
+
+-- T15: role='athlete' → athlete_profile existiert, coach_profile nicht
+SELECT ok(
+  EXISTS(SELECT 1 FROM public.athlete_profiles WHERE id = '11111111-1111-1111-1111-111111111111')
+  AND NOT EXISTS(SELECT 1 FROM public.coach_profiles WHERE id = '11111111-1111-1111-1111-111111111111'),
+  'T15 profile auto-create: role=athlete legt nur athlete_profile an');
+
+-- T16: role='coach' → coach_profile existiert, athlete_profile nicht
+SELECT ok(
+  EXISTS(SELECT 1 FROM public.coach_profiles WHERE id = '22222222-2222-2222-2222-222222222222')
+  AND NOT EXISTS(SELECT 1 FROM public.athlete_profiles WHERE id = '22222222-2222-2222-2222-222222222222'),
+  'T16 profile auto-create: role=coach legt nur coach_profile an');
+
+-- T17: role='both' → beide Profile existieren
+SELECT ok(
+  EXISTS(SELECT 1 FROM public.athlete_profiles WHERE id = '66666666-6666-6666-6666-666666666666')
+  AND EXISTS(SELECT 1 FROM public.coach_profiles WHERE id = '66666666-6666-6666-6666-666666666666'),
+  'T17 profile auto-create: role=both legt beide Profile an');
+
+-- T18: birth_date aus raw_user_meta_data wird uebernommen
+INSERT INTO auth.users (
+  id, instance_id, aud, role, email, encrypted_password,
+  email_confirmed_at, raw_user_meta_data, created_at, updated_at
+) VALUES (
+  '77777777-7777-7777-7777-777777777777',
+  '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
+  'ath_bd@test.r2f', crypt('TestPassword123!', gen_salt('bf')), now(),
+  jsonb_build_object('display_name', 'BirthDate Ath', 'role', 'athlete',
+                     'birth_date', '2005-06-15'),
+  now(), now()
+);
+
+SELECT is(
+  (SELECT birth_date FROM public.athlete_profiles WHERE id = '77777777-7777-7777-7777-777777777777'),
+  '2005-06-15'::date,
+  'T18 profile auto-create: birth_date aus raw_user_meta_data wird in athlete_profiles uebernommen');
 
 
 -- ============================================================
