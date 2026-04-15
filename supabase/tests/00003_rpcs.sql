@@ -70,10 +70,13 @@ SELECT tests.create_user('11111111-1111-1111-1111-111111111111', 'ath_r1@test.r2
 SELECT tests.create_user('22222222-2222-2222-2222-222222222222', 'coach_r1@test.r2f',  'coach',   'RPC Coach1');
 SELECT tests.create_user('33333333-3333-3333-3333-333333333333', 'ath_r2@test.r2f',    'athlete', 'RPC Ath2');
 
+-- Der on_auth_user_created-Trigger legt Profile bereits an; Idempotenz-Guard.
 INSERT INTO public.athlete_profiles (id) VALUES
   ('11111111-1111-1111-1111-111111111111'),
-  ('33333333-3333-3333-3333-333333333333');
-INSERT INTO public.coach_profiles (id) VALUES ('22222222-2222-2222-2222-222222222222');
+  ('33333333-3333-3333-3333-333333333333')
+ON CONFLICT (id) DO NOTHING;
+INSERT INTO public.coach_profiles (id) VALUES ('22222222-2222-2222-2222-222222222222')
+ON CONFLICT (id) DO NOTHING;
 
 -- Vorbereitung: Codes fuer Negativ-Tests
 -- Abgelaufener Code

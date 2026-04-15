@@ -79,14 +79,23 @@ SELECT tests.create_user('44444444-4444-4444-4444-444444444444', 'coach2@test.r2
 SELECT tests.create_user('55555555-5555-5555-5555-555555555555', 'stranger@test.r2f', 'athlete', 'Stranger');
 
 -- Profile
+-- Der on_auth_user_created-Trigger legt athlete_profiles/coach_profiles bereits an.
+-- Test-Fixture-Werte (birth_date, gender, certification, ...) nachziehen via UPSERT.
 INSERT INTO public.athlete_profiles (id, birth_date, gender) VALUES
   ('11111111-1111-1111-1111-111111111111', '2000-01-01', 'male'),
   ('22222222-2222-2222-2222-222222222222', '1998-06-15', 'female'),
-  ('55555555-5555-5555-5555-555555555555', '1999-03-20', 'male');
+  ('55555555-5555-5555-5555-555555555555', '1999-03-20', 'male')
+ON CONFLICT (id) DO UPDATE SET
+  birth_date = EXCLUDED.birth_date,
+  gender     = EXCLUDED.gender;
 
 INSERT INTO public.coach_profiles (id, certification, gym_name, city) VALUES
   ('33333333-3333-3333-3333-333333333333', 'A-Lizenz', 'Fight Gym Berlin', 'Berlin'),
-  ('44444444-4444-4444-4444-444444444444', 'B-Lizenz', 'MMA Dojo Hamburg',  'Hamburg');
+  ('44444444-4444-4444-4444-444444444444', 'B-Lizenz', 'MMA Dojo Hamburg',  'Hamburg')
+ON CONFLICT (id) DO UPDATE SET
+  certification = EXCLUDED.certification,
+  gym_name      = EXCLUDED.gym_name,
+  city          = EXCLUDED.city;
 
 -- Engagements
 -- eng1: coach1 <-> athlete1 (alle Berechtigungen)
