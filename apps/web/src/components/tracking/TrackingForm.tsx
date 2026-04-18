@@ -50,8 +50,12 @@ function TrackingFormInner({ initial }: InnerProps) {
     }
     setError(null);
     try {
-      await upsert.mutateAsync(trackingFormToInput(form));
-      toast.success("Gespeichert.");
+      const result = await upsert.mutateAsync(trackingFormToInput(form));
+      if (result.queuedOffline) {
+        toast.success("Offline gespeichert. Sync bei Reconnect.");
+      } else {
+        toast.success("Gespeichert.");
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Unbekannter Fehler";
       logger.error("tracking upsert failed", msg);
