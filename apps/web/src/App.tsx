@@ -5,6 +5,7 @@ import { LandingPage } from "./pages/Landing";
 import { LoginPage } from "./pages/Login";
 import { RegisterPage } from "./pages/Register";
 import { DashboardPage } from "./pages/Dashboard";
+import { OnboardingPage } from "./pages/onboarding/OnboardingPage";
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -23,6 +24,7 @@ export default function App() {
       <Route path="/register" element={<RegisterPage />} />
 
       <Route element={<ProtectedRoute />}>
+        <Route path="/app/onboarding" element={<OnboardingPage />} />
         <Route path="/app" element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
           <Route path="dashboard" element={<DashboardPage />} />
