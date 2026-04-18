@@ -5,7 +5,8 @@ import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "sonner";
 import App from "./App";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import { initAuth } from "./stores/auth";
+import { initAuth, useAuthStore } from "./stores/auth";
+import { startOfflineFlushWatcher } from "./lib/offlineQueue";
 import "./index.css";
 
 const queryClient = new QueryClient({
@@ -19,6 +20,7 @@ const queryClient = new QueryClient({
 
 async function bootstrap() {
   await initAuth();
+  startOfflineFlushWatcher(queryClient, () => useAuthStore.getState().user?.id ?? null);
 
   createRoot(document.getElementById("root")!).render(
     <StrictMode>

@@ -4,6 +4,7 @@ import { useProfile } from "../../hooks/queries/useProfile";
 import { useModeStore, type ActiveMode } from "../../stores/mode";
 import { BottomNav } from "./BottomNav";
 import { navItemsFor } from "./navItems";
+import { OfflineBanner } from "./OfflineBanner";
 
 export function AppLayout() {
   const user = useAuthStore((s) => s.user);
@@ -28,6 +29,8 @@ export function AppLayout() {
           Abmelden
         </button>
       </header>
+
+      <OfflineBanner />
 
       <main className="flex-1 overflow-y-auto px-4 pt-4 pb-24">
         <Outlet />

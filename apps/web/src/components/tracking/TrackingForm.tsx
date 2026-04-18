@@ -5,6 +5,7 @@ import {
   useUpsertTodayTracking,
   type DailyTracking,
 } from "../../hooks/queries/useDailyTracking";
+import { useOnlineStatus } from "../../hooks/useOnlineStatus";
 import { logger } from "../../lib/logger";
 import { Segmented } from "./Segmented";
 import {
@@ -18,10 +19,11 @@ import {
 
 export function TrackingForm() {
   const q = useTodayTracking();
+  const isOnline = useOnlineStatus();
 
   if (q.isLoading)
     return <p className="text-sm text-slate-500">Lade heutigen Eintrag …</p>;
-  if (q.error)
+  if (q.error && isOnline)
     return (
       <p className="text-sm text-red-400">
         Heutiger Eintrag konnte nicht geladen werden.
@@ -50,8 +52,12 @@ function TrackingFormInner({ initial }: InnerProps) {
     }
     setError(null);
     try {
-      await upsert.mutateAsync(trackingFormToInput(form));
-      toast.success("Gespeichert.");
+      const result = await upsert.mutateAsync(trackingFormToInput(form));
+      if (result.queuedOffline) {
+        toast.success("Offline gespeichert. Sync bei Reconnect.");
+      } else {
+        toast.success("Gespeichert.");
+      }
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Unbekannter Fehler";
       logger.error("tracking upsert failed", msg);

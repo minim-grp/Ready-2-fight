@@ -2,6 +2,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { create } from "zustand";
 import { supabase } from "../lib/supabase";
 import { logger } from "../lib/logger";
+import { clearTrackingQueue } from "../lib/offlineDb";
 
 type AuthState = {
   session: Session | null;
@@ -36,5 +37,10 @@ export async function initAuth(): Promise<void> {
       session,
       user: session?.user ?? null,
     });
+    if (event === "SIGNED_OUT") {
+      void clearTrackingQueue().catch((err) =>
+        logger.error("offline queue clear on signout failed", err),
+      );
+    }
   });
 }
