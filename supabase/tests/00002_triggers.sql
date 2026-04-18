@@ -80,8 +80,8 @@ SELECT tests.create_user('66666666-6666-6666-6666-666666666666', 'both_t1@test.r
 -- ############################################################
 
 -- T1: Erster Tracking-Eintrag → Streak = 1
-INSERT INTO public.daily_tracking (athlete_id, date, mood, energy, trained)
-VALUES ('11111111-1111-1111-1111-111111111111', '2026-03-01', 4, 4, false);
+INSERT INTO public.daily_tracking (athlete_id, date, mood, physical_condition, trained)
+VALUES ('11111111-1111-1111-1111-111111111111', '2026-03-01', 'gut', 'gut', false);
 
 SELECT is(
   (SELECT current_streak FROM public.streaks WHERE user_id = '11111111-1111-1111-1111-111111111111'),
@@ -89,8 +89,8 @@ SELECT is(
   'T01 streak: erster Tracking-Eintrag setzt streak=1');
 
 -- T2: Naechster Tag → Streak = 2
-INSERT INTO public.daily_tracking (athlete_id, date, mood, energy, trained)
-VALUES ('11111111-1111-1111-1111-111111111111', '2026-03-02', 4, 4, false);
+INSERT INTO public.daily_tracking (athlete_id, date, mood, physical_condition, trained)
+VALUES ('11111111-1111-1111-1111-111111111111', '2026-03-02', 'gut', 'gut', false);
 
 SELECT is(
   (SELECT current_streak FROM public.streaks WHERE user_id = '11111111-1111-1111-1111-111111111111'),
@@ -98,8 +98,8 @@ SELECT is(
   'T02 streak: konsekutiver Tag erhoeht streak auf 2');
 
 -- T3: Luecke > 1 Tag → Streak reset auf 1
-INSERT INTO public.daily_tracking (athlete_id, date, mood, energy, trained)
-VALUES ('11111111-1111-1111-1111-111111111111', '2026-03-06', 4, 4, false);
+INSERT INTO public.daily_tracking (athlete_id, date, mood, physical_condition, trained)
+VALUES ('11111111-1111-1111-1111-111111111111', '2026-03-06', 'gut', 'gut', false);
 
 SELECT is(
   (SELECT current_streak FROM public.streaks WHERE user_id = '11111111-1111-1111-1111-111111111111'),
