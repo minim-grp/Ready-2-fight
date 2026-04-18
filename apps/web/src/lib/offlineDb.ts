@@ -6,6 +6,7 @@ const STORE_TRACKING = "daily_tracking_queue";
 
 export type QueuedTrackingUpsert = {
   client_uuid: string;
+  auth_user_id: string;
   athlete_id: string;
   date: string;
   row: TablesInsert<"daily_tracking">;

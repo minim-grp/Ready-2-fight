@@ -16,10 +16,12 @@ export type TrackingInsertRow = TablesInsert<"daily_tracking"> & {
 
 export async function enqueueTrackingUpsert(
   row: TrackingInsertRow,
+  authUserId: string,
 ): Promise<QueuedTrackingUpsert> {
   const existing = await getAllTrackingQueue();
   for (const e of existing) {
     if (
+      e.auth_user_id === authUserId &&
       e.athlete_id === row.athlete_id &&
       e.date === row.date &&
       e.client_uuid !== row.client_uuid
@@ -29,6 +31,7 @@ export async function enqueueTrackingUpsert(
   }
   const entry: QueuedTrackingUpsert = {
     client_uuid: row.client_uuid,
+    auth_user_id: authUserId,
     athlete_id: row.athlete_id,
     date: row.date,
     row,
@@ -55,8 +58,10 @@ async function defaultUpsertRunner(row: TablesInsert<"daily_tracking">): Promise
 
 export async function flushTrackingQueue(
   runner: UpsertRunner = defaultUpsertRunner,
+  authUserId?: string,
 ): Promise<FlushResult> {
-  const entries = await getAllTrackingQueue();
+  const all = await getAllTrackingQueue();
+  const entries = authUserId ? all.filter((e) => e.auth_user_id === authUserId) : [];
   const succeeded: QueuedTrackingUpsert[] = [];
   const failed: FlushResult["failed"] = [];
   for (const entry of entries) {
@@ -72,14 +77,21 @@ export async function flushTrackingQueue(
   return { succeeded, failed };
 }
 
-export function startOfflineFlushWatcher(queryClient: QueryClient): () => void {
+export type AuthUserIdGetter = () => string | null;
+
+export function startOfflineFlushWatcher(
+  queryClient: QueryClient,
+  getAuthUserId: AuthUserIdGetter,
+): () => void {
   let running = false;
   async function attempt() {
     if (running) return;
     if (typeof navigator !== "undefined" && !navigator.onLine) return;
+    const authUserId = getAuthUserId();
+    if (!authUserId) return;
     running = true;
     try {
-      const result = await flushTrackingQueue();
+      const result = await flushTrackingQueue(undefined, authUserId);
       if (result.succeeded.length > 0) {
         await queryClient.invalidateQueries({ queryKey: ["daily_tracking"] });
       }

@@ -5,6 +5,7 @@ import {
   useUpsertTodayTracking,
   type DailyTracking,
 } from "../../hooks/queries/useDailyTracking";
+import { useOnlineStatus } from "../../hooks/useOnlineStatus";
 import { logger } from "../../lib/logger";
 import { Segmented } from "./Segmented";
 import {
@@ -18,10 +19,11 @@ import {
 
 export function TrackingForm() {
   const q = useTodayTracking();
+  const isOnline = useOnlineStatus();
 
   if (q.isLoading)
     return <p className="text-sm text-slate-500">Lade heutigen Eintrag …</p>;
-  if (q.error)
+  if (q.error && isOnline)
     return (
       <p className="text-sm text-red-400">
         Heutiger Eintrag konnte nicht geladen werden.

@@ -102,7 +102,7 @@ export function useUpsertTodayTracking() {
       ]);
 
       if (typeof navigator !== "undefined" && !navigator.onLine) {
-        await enqueueTrackingUpsert(row);
+        await enqueueTrackingUpsert(row, userId);
         return { row: buildOptimisticRow(row, existing ?? null), queuedOffline: true };
       }
 
@@ -121,7 +121,7 @@ export function useUpsertTodayTracking() {
           err instanceof Error
         ) {
           logger.warn("tracking upsert fiel zurueck in Offline-Queue", err.message);
-          await enqueueTrackingUpsert(row);
+          await enqueueTrackingUpsert(row, userId);
           return { row: buildOptimisticRow(row, existing ?? null), queuedOffline: true };
         }
         throw err;
