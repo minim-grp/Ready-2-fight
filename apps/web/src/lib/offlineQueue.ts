@@ -7,7 +7,6 @@ import {
 } from "./offlineDb";
 import type { TablesInsert } from "./database.types";
 import { logger } from "./logger";
-import { supabase } from "./supabase";
 
 export type TrackingInsertRow = TablesInsert<"daily_tracking"> & {
   athlete_id: string;
@@ -47,6 +46,7 @@ export type FlushResult = {
 };
 
 async function defaultUpsertRunner(row: TablesInsert<"daily_tracking">): Promise<void> {
+  const { supabase } = await import("./supabase");
   const { error } = await supabase
     .from("daily_tracking")
     .upsert(row, { onConflict: "athlete_id,date" });
