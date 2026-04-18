@@ -479,57 +479,72 @@ export type Database = {
       };
       daily_tracking: {
         Row: {
+          activity_level: Database["public"]["Enums"]["activity_level"] | null;
           athlete_id: string;
+          calories_kcal: number | null;
           client_uuid: string | null;
           created_at: string;
           date: string;
           duration_min: number | null;
-          energy: number | null;
           engagement_id: string | null;
           id: string;
-          mood: number | null;
+          mood: Database["public"]["Enums"]["mood_level"] | null;
           notes: string | null;
+          physical_condition: Database["public"]["Enums"]["physical_condition"] | null;
           rpe: number | null;
-          sleep_hours: number | null;
+          sleep_quality: Database["public"]["Enums"]["sleep_quality"] | null;
+          soreness: boolean;
+          soreness_region: string | null;
           srpe: number | null;
           trained: boolean;
           updated_at: string;
+          water_l: number | null;
           weight_kg: number | null;
         };
         Insert: {
+          activity_level?: Database["public"]["Enums"]["activity_level"] | null;
           athlete_id: string;
+          calories_kcal?: number | null;
           client_uuid?: string | null;
           created_at?: string;
           date: string;
           duration_min?: number | null;
-          energy?: number | null;
           engagement_id?: string | null;
           id?: string;
-          mood?: number | null;
+          mood?: Database["public"]["Enums"]["mood_level"] | null;
           notes?: string | null;
+          physical_condition?: Database["public"]["Enums"]["physical_condition"] | null;
           rpe?: number | null;
-          sleep_hours?: number | null;
+          sleep_quality?: Database["public"]["Enums"]["sleep_quality"] | null;
+          soreness?: boolean;
+          soreness_region?: string | null;
           srpe?: number | null;
           trained?: boolean;
           updated_at?: string;
+          water_l?: number | null;
           weight_kg?: number | null;
         };
         Update: {
+          activity_level?: Database["public"]["Enums"]["activity_level"] | null;
           athlete_id?: string;
+          calories_kcal?: number | null;
           client_uuid?: string | null;
           created_at?: string;
           date?: string;
           duration_min?: number | null;
-          energy?: number | null;
           engagement_id?: string | null;
           id?: string;
-          mood?: number | null;
+          mood?: Database["public"]["Enums"]["mood_level"] | null;
           notes?: string | null;
+          physical_condition?: Database["public"]["Enums"]["physical_condition"] | null;
           rpe?: number | null;
-          sleep_hours?: number | null;
+          sleep_quality?: Database["public"]["Enums"]["sleep_quality"] | null;
+          soreness?: boolean;
+          soreness_region?: string | null;
           srpe?: number | null;
           trained?: boolean;
           updated_at?: string;
+          water_l?: number | null;
           weight_kg?: number | null;
         };
         Relationships: [
@@ -1425,8 +1440,12 @@ export type Database = {
       utc_date: { Args: { ts: string }; Returns: string };
     };
     Enums: {
+      activity_level: "keine" | "moderat" | "hoch" | "extrem";
       gender: "male" | "female" | "diverse" | "prefer_not_to_say";
       language: "de" | "en";
+      mood_level: "gut" | "mittel" | "schlecht";
+      physical_condition: "gut" | "mittel" | "schlecht";
+      sleep_quality: "gut" | "mittel" | "schlecht";
       user_role: "athlete" | "coach" | "both";
       user_status: "active" | "paused" | "pending_deletion" | "deleted";
     };
@@ -1556,8 +1575,12 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      activity_level: ["keine", "moderat", "hoch", "extrem"],
       gender: ["male", "female", "diverse", "prefer_not_to_say"],
       language: ["de", "en"],
+      mood_level: ["gut", "mittel", "schlecht"],
+      physical_condition: ["gut", "mittel", "schlecht"],
+      sleep_quality: ["gut", "mittel", "schlecht"],
       user_role: ["athlete", "coach", "both"],
       user_status: ["active", "paused", "pending_deletion", "deleted"],
     },
