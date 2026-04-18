@@ -119,9 +119,12 @@ UPDATE public.coach_athlete_engagements SET status = 'active'
   WHERE id = 'eeee0002-eeee-eeee-eeee-eeeeeeeeeeee';
 
 -- Daily Tracking
-INSERT INTO public.daily_tracking (id, athlete_id, date, sleep_hours, mood, energy, trained) VALUES
-  ('dddd0001-dddd-dddd-dddd-dddddddddddd', '11111111-1111-1111-1111-111111111111', CURRENT_DATE,     7.5, 4, 4, false),
-  ('dddd0002-dddd-dddd-dddd-dddddddddddd', '22222222-2222-2222-2222-222222222222', CURRENT_DATE - 1, 8.0, 3, 3, false);
+INSERT INTO public.daily_tracking
+  (id, athlete_id, date, sleep_quality, mood, physical_condition, water_l, weight_kg, trained) VALUES
+  ('dddd0001-dddd-dddd-dddd-dddddddddddd', '11111111-1111-1111-1111-111111111111', CURRENT_DATE,
+   'gut', 'gut', 'gut', 2.5, 75.0, false),
+  ('dddd0002-dddd-dddd-dddd-dddddddddddd', '22222222-2222-2222-2222-222222222222', CURRENT_DATE - 1,
+   'mittel', 'mittel', 'mittel', 2.0, 70.0, false);
 
 -- CRS Tests
 INSERT INTO public.crs_tests (id, athlete_id, status) VALUES
