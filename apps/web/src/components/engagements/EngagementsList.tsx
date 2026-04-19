@@ -9,9 +9,12 @@ import {
 import {
   endReasonLabel,
   mapLifecycleError,
+  permissionLabel,
+  PERMISSION_KEYS,
   purposeLabel,
   statusLabel,
   statusStyle,
+  type PermissionKey,
 } from "../../lib/engagementLifecycle";
 import { ReauthModal } from "./ReauthModal";
 
@@ -152,6 +155,8 @@ function EngagementRowView({
     : (row.coach_name ?? "Coach");
   const counterpartyRole = isCoach ? "Athlet" : "Coach";
   const endedReason = endReasonLabel(row.end_reason);
+  const grantedPermissions = PERMISSION_KEYS.filter((key) => row[key]);
+  const permissionsTitle = isCoach ? "Deine Rechte" : "Coach sieht";
 
   return (
     <li className="rounded-md border border-slate-800 bg-slate-900/50 p-3">
@@ -172,6 +177,14 @@ function EngagementRowView({
 
       {row.status === "ended" && endedReason && (
         <p className="mt-1 text-xs text-slate-500">{endedReason}</p>
+      )}
+
+      {row.status !== "ended" && (
+        <PermissionChips
+          title={permissionsTitle}
+          granted={grantedPermissions}
+          engagementId={row.id}
+        />
       )}
 
       {row.status !== "ended" && (
@@ -207,5 +220,38 @@ function EngagementRowView({
         </div>
       )}
     </li>
+  );
+}
+
+type PermissionChipsProps = {
+  title: string;
+  granted: PermissionKey[];
+  engagementId: string;
+};
+
+function PermissionChips({ title, granted, engagementId }: PermissionChipsProps) {
+  const labelId = `perm-${engagementId}`;
+  return (
+    <div className="mt-2">
+      <p id={labelId} className="text-xs text-slate-500">
+        {title}:
+      </p>
+      {granted.length === 0 ? (
+        <p className="mt-0.5 text-xs text-slate-600" aria-labelledby={labelId}>
+          keine Berechtigungen
+        </p>
+      ) : (
+        <ul aria-labelledby={labelId} className="mt-1 flex flex-wrap gap-1">
+          {granted.map((key) => (
+            <li
+              key={key}
+              className="rounded-full border border-slate-700 bg-slate-800/60 px-2 py-0.5 text-[10px] text-slate-300"
+            >
+              {permissionLabel(key)}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
