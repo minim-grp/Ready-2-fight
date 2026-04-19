@@ -6,6 +6,7 @@ import { LoginPage } from "./pages/Login";
 import { RegisterPage } from "./pages/Register";
 import { DashboardPage } from "./pages/Dashboard";
 import { OnboardingPage } from "./pages/onboarding/OnboardingPage";
+import { CodesPage } from "./pages/CodesPage";
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -31,7 +32,7 @@ export default function App() {
           <Route path="tracking" element={<Placeholder title="Tracking" />} />
           <Route path="engagements" element={<Placeholder title="Coaches" />} />
           <Route path="athletes" element={<Placeholder title="Athleten" />} />
-          <Route path="codes" element={<Placeholder title="Codes" />} />
+          <Route path="codes" element={<CodesPage />} />
           <Route path="settings" element={<Placeholder title="Profil" />} />
         </Route>
       </Route>
