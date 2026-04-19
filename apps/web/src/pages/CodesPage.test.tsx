@@ -43,6 +43,10 @@ vi.mock("../hooks/queries/useGenerateEngagementCode", () => ({
   useGenerateEngagementCode: () => mutationState.value,
 }));
 
+vi.mock("../components/codes/CodesList", () => ({
+  CodesList: () => <div data-testid="codes-list-mock" />,
+}));
+
 function setProfile(role: Profile["role"], overrides: Partial<ProfileQueryState> = {}) {
   profileState.value = {
     data: {
@@ -108,6 +112,7 @@ describe("CodesPage", () => {
     expect(screen.getByLabelText(/Anzahl Einloesungen/i)).toHaveValue(1);
     expect(screen.getByLabelText(/Gueltigkeit in Tagen/i)).toHaveValue(7);
     expect(screen.getByRole("button", { name: /Code erstellen/i })).toBeEnabled();
+    expect(screen.getByTestId("codes-list-mock")).toBeInTheDocument();
   });
 
   it("rendert das Formular fuer Both im Coach-Modus", () => {
