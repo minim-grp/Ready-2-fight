@@ -42,6 +42,10 @@ vi.mock("../hooks/queries/useRedeemEngagementCode", () => ({
   useRedeemEngagementCode: () => mutationState.value,
 }));
 
+vi.mock("../components/engagements/EngagementsList", () => ({
+  EngagementsList: () => <div data-testid="engagements-list" />,
+}));
+
 function setProfile(role: Profile["role"], overrides: Partial<ProfileQueryState> = {}) {
   profileState.value = {
     data: {
@@ -104,6 +108,12 @@ describe("EngagementsPage", () => {
     render(<EngagementsPage />);
     expect(screen.getByLabelText(/Engagement-Code/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Code einloesen/i })).toBeEnabled();
+  });
+
+  it("rendert Engagements-Liste fuer Athlet", () => {
+    setProfile("athlete");
+    render(<EngagementsPage />);
+    expect(screen.getByTestId("engagements-list")).toBeInTheDocument();
   });
 
   it("rendert Form fuer Both im Athlete-Modus", () => {

@@ -3,6 +3,7 @@ import { useProfile } from "../hooks/queries/useProfile";
 import { useModeStore } from "../stores/mode";
 import { useRedeemEngagementCode } from "../hooks/queries/useRedeemEngagementCode";
 import { mapRedeemError, normalizeCode, validateCodeInput } from "../lib/redeemCode";
+import { EngagementsList } from "../components/engagements/EngagementsList";
 
 export function EngagementsPage() {
   const profile = useProfile();
@@ -47,6 +48,10 @@ export function EngagementsPage() {
         </p>
       </header>
       <RedeemForm />
+      <section className="space-y-2">
+        <h2 className="text-lg font-semibold">Deine Engagements</h2>
+        <EngagementsList />
+      </section>
     </section>
   );
 }
