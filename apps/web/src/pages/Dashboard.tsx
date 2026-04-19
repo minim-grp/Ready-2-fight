@@ -3,6 +3,7 @@ import { useModeStore } from "../stores/mode";
 import { useProfile } from "../hooks/queries/useProfile";
 import { TrackingForm } from "../components/tracking/TrackingForm";
 import { StreakCard } from "../components/dashboard/StreakCard";
+import { StreakHistoryChart } from "../components/dashboard/StreakHistoryChart";
 
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
@@ -25,6 +26,7 @@ export function DashboardPage() {
       )}
 
       {showTracking && <StreakCard />}
+      {showTracking && <StreakHistoryChart />}
       {showTracking && <TrackingForm />}
 
       {!showTracking && profile.data && (
