@@ -2,6 +2,7 @@ import { useAuthStore } from "../stores/auth";
 import { useModeStore } from "../stores/mode";
 import { useProfile } from "../hooks/queries/useProfile";
 import { TrackingForm } from "../components/tracking/TrackingForm";
+import { StreakCard } from "../components/dashboard/StreakCard";
 
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
@@ -23,6 +24,7 @@ export function DashboardPage() {
         <p className="text-sm text-red-400">Profil konnte nicht geladen werden.</p>
       )}
 
+      {showTracking && <StreakCard />}
       {showTracking && <TrackingForm />}
 
       {!showTracking && profile.data && (
