@@ -152,6 +152,7 @@ export type Database = {
           id: string;
           is_locked: boolean;
           locked_at: string | null;
+          read_only_until: string | null;
         };
         Insert: {
           created_at?: string;
@@ -159,6 +160,7 @@ export type Database = {
           id?: string;
           is_locked?: boolean;
           locked_at?: string | null;
+          read_only_until?: string | null;
         };
         Update: {
           created_at?: string;
@@ -166,6 +168,7 @@ export type Database = {
           id?: string;
           is_locked?: boolean;
           locked_at?: string | null;
+          read_only_until?: string | null;
         };
         Relationships: [
           {
@@ -1348,6 +1351,10 @@ export type Database = {
         Returns: boolean;
       };
       cleanup_expired_tracking: { Args: never; Returns: undefined };
+      end_engagement: {
+        Args: { p_end_reason?: string; p_engagement_id: string };
+        Returns: string;
+      };
       generate_engagement_code: {
         Args: {
           p_internal_label?: string;
@@ -1433,9 +1440,11 @@ export type Database = {
       is_self: { Args: { target_user: string }; Returns: boolean };
       notify_data_expiry: { Args: never; Returns: undefined };
       own_athlete_profile_id: { Args: never; Returns: string };
+      pause_engagement: { Args: { p_engagement_id: string }; Returns: string };
       redeem_engagement_code: { Args: { p_code: string }; Returns: string };
       request_account_deletion: { Args: never; Returns: string };
       reset_expired_streaks: { Args: never; Returns: number };
+      resume_engagement: { Args: { p_engagement_id: string }; Returns: string };
       revoke_engagement_code: { Args: { p_code_id: string }; Returns: string };
       show_limit: { Args: never; Returns: number };
       show_trgm: { Args: { "": string }; Returns: string[] };
