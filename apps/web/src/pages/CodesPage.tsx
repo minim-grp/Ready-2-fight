@@ -5,6 +5,7 @@ import {
   useGenerateEngagementCode,
   type GeneratedCode,
 } from "../hooks/queries/useGenerateEngagementCode";
+import { CodesList } from "../components/codes/CodesList";
 import {
   DEFAULT_CODE_FORM,
   formatExpiresAt,
@@ -202,6 +203,11 @@ export function CodesPage() {
           {mutation.isPending ? "Erstelle …" : "Code erstellen"}
         </button>
       </form>
+
+      <section className="space-y-2">
+        <h2 className="text-lg font-semibold">Deine Codes</h2>
+        <CodesList />
+      </section>
     </section>
   );
 }

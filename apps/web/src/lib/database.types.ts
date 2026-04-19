@@ -1408,6 +1408,10 @@ export type Database = {
           new_xp_total: number;
         }[];
       };
+      revoke_engagement_code: {
+        Args: { p_code_id: string };
+        Returns: string;
+      };
       is_coach_of_user: { Args: { p_user_id: string }; Returns: boolean };
       is_competition_prep_active: {
         Args: { p_user_id: string };

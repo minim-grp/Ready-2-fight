@@ -57,6 +57,12 @@ export function mapRpcError(err: unknown): string {
   if (raw.includes("valid_days_out_of_range")) {
     return "Gueltigkeitsdauer muss zwischen 1 und 30 Tagen liegen.";
   }
+  if (raw.includes("code_already_revoked")) {
+    return "Code wurde bereits widerrufen.";
+  }
+  if (raw.includes("code_not_found")) {
+    return "Code nicht gefunden.";
+  }
   return "Code konnte nicht erstellt werden.";
 }
 
@@ -68,4 +74,36 @@ export function formatExpiresAt(iso: string, locale = "de-DE"): string {
     month: "2-digit",
     year: "numeric",
   });
+}
+
+export type CodeStatus = "active" | "exhausted" | "expired" | "revoked";
+
+export type CodeStatusInput = {
+  uses_count: number;
+  max_uses: number;
+  expires_at: string;
+  revoked_at: string | null;
+};
+
+export function deriveCodeStatus(c: CodeStatusInput, now: Date = new Date()): CodeStatus {
+  if (c.revoked_at) return "revoked";
+  const expires = new Date(c.expires_at);
+  if (!Number.isNaN(expires.getTime()) && expires.getTime() <= now.getTime()) {
+    return "expired";
+  }
+  if (c.uses_count >= c.max_uses) return "exhausted";
+  return "active";
+}
+
+export function statusLabel(s: CodeStatus): string {
+  switch (s) {
+    case "active":
+      return "aktiv";
+    case "exhausted":
+      return "eingeloest";
+    case "expired":
+      return "abgelaufen";
+    case "revoked":
+      return "widerrufen";
+  }
 }

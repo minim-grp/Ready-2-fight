@@ -4,6 +4,8 @@ import {
   hasErrors,
   mapRpcError,
   formatExpiresAt,
+  deriveCodeStatus,
+  statusLabel,
   DEFAULT_CODE_FORM,
 } from "./engagementCode";
 
@@ -85,5 +87,74 @@ describe("formatExpiresAt", () => {
 
   it("liefert Roh-String bei ungueltigem Datum zurueck", () => {
     expect(formatExpiresAt("nicht-ein-datum")).toBe("nicht-ein-datum");
+  });
+});
+
+describe("deriveCodeStatus", () => {
+  const future = "2099-01-01T00:00:00Z";
+  const past = "2000-01-01T00:00:00Z";
+
+  it("revoked schlaegt alles", () => {
+    expect(
+      deriveCodeStatus({
+        uses_count: 0,
+        max_uses: 1,
+        expires_at: future,
+        revoked_at: "2026-01-01T00:00:00Z",
+      }),
+    ).toBe("revoked");
+  });
+
+  it("expired wenn expires_at in der Vergangenheit", () => {
+    expect(
+      deriveCodeStatus({
+        uses_count: 0,
+        max_uses: 1,
+        expires_at: past,
+        revoked_at: null,
+      }),
+    ).toBe("expired");
+  });
+
+  it("exhausted wenn uses_count == max_uses", () => {
+    expect(
+      deriveCodeStatus({
+        uses_count: 1,
+        max_uses: 1,
+        expires_at: future,
+        revoked_at: null,
+      }),
+    ).toBe("exhausted");
+  });
+
+  it("active sonst", () => {
+    expect(
+      deriveCodeStatus({
+        uses_count: 0,
+        max_uses: 2,
+        expires_at: future,
+        revoked_at: null,
+      }),
+    ).toBe("active");
+  });
+
+  it("expired vor exhausted (revoked beats them, exhausted only if not expired)", () => {
+    expect(
+      deriveCodeStatus({
+        uses_count: 1,
+        max_uses: 1,
+        expires_at: past,
+        revoked_at: null,
+      }),
+    ).toBe("expired");
+  });
+});
+
+describe("statusLabel", () => {
+  it("liefert deutsche Labels", () => {
+    expect(statusLabel("active")).toBe("aktiv");
+    expect(statusLabel("exhausted")).toBe("eingeloest");
+    expect(statusLabel("expired")).toBe("abgelaufen");
+    expect(statusLabel("revoked")).toBe("widerrufen");
   });
 });
