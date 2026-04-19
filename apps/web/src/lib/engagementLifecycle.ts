@@ -69,6 +69,30 @@ export function endReasonLabel(r: string | null): string | null {
   }
 }
 
+export type PermissionKey =
+  | "can_see_tracking"
+  | "can_see_meals"
+  | "can_see_tests"
+  | "can_create_plans";
+
+const PERMISSION_LABELS: Record<PermissionKey, string> = {
+  can_see_tracking: "Tracking",
+  can_see_meals: "Ernaehrung",
+  can_see_tests: "CRS-Tests",
+  can_create_plans: "Plaene erstellen",
+};
+
+export const PERMISSION_KEYS: readonly PermissionKey[] = [
+  "can_see_tracking",
+  "can_see_meals",
+  "can_see_tests",
+  "can_create_plans",
+] as const;
+
+export function permissionLabel(key: PermissionKey): string {
+  return PERMISSION_LABELS[key];
+}
+
 export function mapLifecycleError(err: unknown): string {
   const raw = err instanceof Error ? err.message : String(err);
   if (raw.includes("not_authenticated")) {

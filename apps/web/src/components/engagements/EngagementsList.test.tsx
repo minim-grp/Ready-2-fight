@@ -72,6 +72,10 @@ function row(overrides: Partial<EngagementRow> = {}): EngagementRow {
     end_reason: null,
     started_at: "2026-04-01T00:00:00Z",
     ended_at: null,
+    can_see_tracking: true,
+    can_see_meals: false,
+    can_see_tests: true,
+    can_create_plans: true,
     coach_name: "Coach Karl",
     athlete_name: "Athlet Anna",
     ...overrides,
@@ -209,6 +213,78 @@ describe("EngagementsList", () => {
     });
     expect(endState.value.mutateAsync).not.toHaveBeenCalled();
     expect(await screen.findByText(/Passwort ist falsch/i)).toBeInTheDocument();
+  });
+
+  it("rendert Permissions-Chips fuer gewaehrte Rechte (Athlet-Sicht: 'Coach sieht')", () => {
+    queryState.value = {
+      data: [
+        row({
+          can_see_tracking: true,
+          can_see_meals: false,
+          can_see_tests: true,
+          can_create_plans: false,
+        }),
+      ],
+      isLoading: false,
+      error: null,
+    };
+    render(<EngagementsList />);
+    expect(screen.getByText(/Coach sieht/i)).toBeInTheDocument();
+    const chips = screen.getByRole("list", { name: /Coach sieht/i });
+    expect(chips).toHaveTextContent("Tracking");
+    expect(chips).toHaveTextContent("CRS-Tests");
+    expect(chips).not.toHaveTextContent("Ernaehrung");
+    expect(chips).not.toHaveTextContent("Plaene erstellen");
+  });
+
+  it("zeigt 'keine Berechtigungen' wenn alle Permissions false", () => {
+    queryState.value = {
+      data: [
+        row({
+          can_see_tracking: false,
+          can_see_meals: false,
+          can_see_tests: false,
+          can_create_plans: false,
+        }),
+      ],
+      isLoading: false,
+      error: null,
+    };
+    render(<EngagementsList />);
+    expect(screen.getByText(/keine Berechtigungen/i)).toBeInTheDocument();
+  });
+
+  it("nutzt Coach-Formulierung ('Deine Rechte') wenn User Coach ist", () => {
+    authState.userId = "coach-u1";
+    queryState.value = { data: [row()], isLoading: false, error: null };
+    render(<EngagementsList />);
+    expect(screen.getByText(/Deine Rechte/i)).toBeInTheDocument();
+    expect(screen.queryByText(/^Coach sieht:/i)).not.toBeInTheDocument();
+  });
+
+  it("blendet Permissions-Chips bei status=ended aus", () => {
+    queryState.value = {
+      data: [row({ status: "ended", end_reason: "mutual", ended_at: "x" })],
+      isLoading: false,
+      error: null,
+    };
+    render(<EngagementsList />);
+    expect(screen.queryByText(/Coach sieht/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Deine Rechte/i)).not.toBeInTheDocument();
+  });
+
+  it("zeigt mehrere Coaches in einer Liste (Athleten-Sicht)", () => {
+    queryState.value = {
+      data: [
+        row({ id: "e-1", coach_id: "c1", coach_name: "Coach Alpha", status: "active" }),
+        row({ id: "e-2", coach_id: "c2", coach_name: "Coach Beta", status: "paused" }),
+      ],
+      isLoading: false,
+      error: null,
+    };
+    render(<EngagementsList />);
+    expect(screen.getByText(/Coach Alpha/)).toBeInTheDocument();
+    expect(screen.getByText(/Coach Beta/)).toBeInTheDocument();
   });
 
   it("Abbrechen im Modal schliesst ohne Call", () => {

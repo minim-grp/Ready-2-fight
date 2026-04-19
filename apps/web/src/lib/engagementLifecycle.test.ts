@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import {
   endReasonLabel,
   mapLifecycleError,
+  permissionLabel,
+  PERMISSION_KEYS,
   purposeLabel,
   statusLabel,
   statusStyle,
@@ -53,6 +55,23 @@ describe("endReasonLabel", () => {
     expect(endReasonLabel("athlete_left")).toMatch(/Athlet/i);
     expect(endReasonLabel("coach_ended")).toMatch(/Coach/i);
     expect(endReasonLabel("mutual")).toMatch(/einvernehmlich/i);
+  });
+});
+
+describe("permissionLabel", () => {
+  it("liefert fuer jeden PERMISSION_KEY ein unterschiedliches Label", () => {
+    const labels = PERMISSION_KEYS.map(permissionLabel);
+    expect(new Set(labels).size).toBe(PERMISSION_KEYS.length);
+    expect(labels.every((l) => l.length > 0)).toBe(true);
+  });
+
+  it("enthaelt die vier erwarteten Keys in stabiler Reihenfolge", () => {
+    expect(PERMISSION_KEYS).toEqual([
+      "can_see_tracking",
+      "can_see_meals",
+      "can_see_tests",
+      "can_create_plans",
+    ]);
   });
 });
 
