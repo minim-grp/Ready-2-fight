@@ -1408,10 +1408,6 @@ export type Database = {
           new_xp_total: number;
         }[];
       };
-      revoke_engagement_code: {
-        Args: { p_code_id: string };
-        Returns: string;
-      };
       is_coach_of_user: { Args: { p_user_id: string }; Returns: boolean };
       is_competition_prep_active: {
         Args: { p_user_id: string };
@@ -1439,6 +1435,8 @@ export type Database = {
       own_athlete_profile_id: { Args: never; Returns: string };
       redeem_engagement_code: { Args: { p_code: string }; Returns: string };
       request_account_deletion: { Args: never; Returns: string };
+      reset_expired_streaks: { Args: never; Returns: number };
+      revoke_engagement_code: { Args: { p_code_id: string }; Returns: string };
       show_limit: { Args: never; Returns: number };
       show_trgm: { Args: { "": string }; Returns: string[] };
       utc_date: { Args: { ts: string }; Returns: string };
