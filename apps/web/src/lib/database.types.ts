@@ -426,11 +426,11 @@ export type Database = {
           client_uuid: string | null;
           completed_at: string | null;
           created_at: string;
+          high_knees_contacts: number | null;
           id: string;
           plank_sec: number | null;
           pushups_60s: number | null;
           rank_label: string | null;
-          run_400m_sec: number | null;
           score: number | null;
           squats_60s: number | null;
           started_at: string;
@@ -443,11 +443,11 @@ export type Database = {
           client_uuid?: string | null;
           completed_at?: string | null;
           created_at?: string;
+          high_knees_contacts?: number | null;
           id?: string;
           plank_sec?: number | null;
           pushups_60s?: number | null;
           rank_label?: string | null;
-          run_400m_sec?: number | null;
           score?: number | null;
           squats_60s?: number | null;
           started_at?: string;
@@ -460,11 +460,11 @@ export type Database = {
           client_uuid?: string | null;
           completed_at?: string | null;
           created_at?: string;
+          high_knees_contacts?: number | null;
           id?: string;
           plank_sec?: number | null;
           pushups_60s?: number | null;
           rank_label?: string | null;
-          run_400m_sec?: number | null;
           score?: number | null;
           squats_60s?: number | null;
           started_at?: string;
@@ -1342,6 +1342,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      abort_crs_test: { Args: { p_test_id: string }; Returns: undefined };
       can_coach_see_competition: {
         Args: { p_competition_id: string };
         Returns: boolean;
@@ -1351,6 +1352,7 @@ export type Database = {
         Returns: boolean;
       };
       cleanup_expired_tracking: { Args: never; Returns: undefined };
+      complete_crs_test: { Args: { p_test_id: string }; Returns: string };
       end_engagement: {
         Args: { p_end_reason?: string; p_engagement_id: string };
         Returns: string;
@@ -1446,8 +1448,13 @@ export type Database = {
       reset_expired_streaks: { Args: never; Returns: number };
       resume_engagement: { Args: { p_engagement_id: string }; Returns: string };
       revoke_engagement_code: { Args: { p_code_id: string }; Returns: string };
+      save_crs_exercise: {
+        Args: { p_exercise: string; p_test_id: string; p_value: number };
+        Returns: undefined;
+      };
       show_limit: { Args: never; Returns: number };
       show_trgm: { Args: { "": string }; Returns: string[] };
+      start_crs_test: { Args: { p_client_uuid?: string }; Returns: string };
       utc_date: { Args: { ts: string }; Returns: string };
     };
     Enums: {
