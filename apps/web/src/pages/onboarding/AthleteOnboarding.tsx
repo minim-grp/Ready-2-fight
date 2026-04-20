@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../stores/auth";
@@ -15,14 +15,21 @@ const GENDERS: { value: Gender; label: string }[] = [
   { value: "prefer_not_to_say", label: "Keine Angabe" },
 ];
 
-type Props = { onComplete: () => void };
+type Props = {
+  onComplete: () => void;
+  onSportsChange?: (sportIds: string[]) => void;
+};
 
-export function AthleteOnboarding({ onComplete }: Props) {
+export function AthleteOnboarding({ onComplete, onSportsChange }: Props) {
   const userId = useAuthStore((s) => s.user?.id);
   const sports = useSportDisciplines();
 
   const [step, setStep] = useState(0);
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
+
+  useEffect(() => {
+    onSportsChange?.(selectedSports);
+  }, [selectedSports, onSportsChange]);
   const [primarySportId, setPrimarySportId] = useState<string | null>(null);
   const [gender, setGender] = useState<Gender | "">("");
   const [heightCm, setHeightCm] = useState("");

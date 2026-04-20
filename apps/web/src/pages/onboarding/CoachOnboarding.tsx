@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
 import { useAuthStore } from "../../stores/auth";
@@ -6,9 +6,12 @@ import { useSportDisciplines } from "../../hooks/queries/useSportDisciplines";
 import { logger } from "../../lib/logger";
 import type { TablesUpdate } from "../../lib/database.types";
 
-type Props = { onComplete: () => void };
+type Props = {
+  onComplete: () => void;
+  prefillSportIds?: string[];
+};
 
-export function CoachOnboarding({ onComplete }: Props) {
+export function CoachOnboarding({ onComplete, prefillSportIds }: Props) {
   const userId = useAuthStore((s) => s.user?.id);
   const sports = useSportDisciplines();
 
@@ -17,8 +20,23 @@ export function CoachOnboarding({ onComplete }: Props) {
   const [city, setCity] = useState("");
   const [certification, setCertification] = useState("");
   const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
+  const [prefillApplied, setPrefillApplied] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const prefillIdsRef = useRef(prefillSportIds);
+  prefillIdsRef.current = prefillSportIds;
+
+  useEffect(() => {
+    if (prefillApplied) return;
+    const ids = prefillIdsRef.current;
+    if (!ids || ids.length === 0) return;
+    if (!sports.data) return;
+    const slugs = sports.data.filter((s) => ids.includes(s.id)).map((s) => s.slug);
+    if (slugs.length === 0) return;
+    setSelectedSpecialties(slugs);
+    setPrefillApplied(true);
+  }, [sports.data, prefillApplied]);
 
   function toggleSpecialty(slug: string) {
     setSelectedSpecialties((prev) =>
@@ -76,7 +94,9 @@ export function CoachOnboarding({ onComplete }: Props) {
         <p className="mt-1 text-sm text-slate-400">
           {step === 0
             ? "Wo trainierst du deine Athleten?"
-            : "Waehle mindestens eine Spezialisierung."}
+            : prefillApplied
+              ? "Aus deinem Athleten-Profil uebernommen. Du kannst die Liste anpassen."
+              : "Waehle mindestens eine Spezialisierung."}
         </p>
       </header>
 

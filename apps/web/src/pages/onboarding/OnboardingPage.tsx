@@ -14,6 +14,7 @@ export function OnboardingPage() {
   const role = profile.data?.role;
 
   const [phase, setPhase] = useState<Phase | null>(null);
+  const [athleteSportIds, setAthleteSportIds] = useState<string[]>([]);
 
   if (profile.isLoading) {
     return (
@@ -59,9 +60,17 @@ export function OnboardingPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-900 px-6 py-10 text-slate-100">
       {currentPhase === "athlete" && (
-        <AthleteOnboarding onComplete={handleAthleteComplete} />
+        <AthleteOnboarding
+          onComplete={handleAthleteComplete}
+          onSportsChange={setAthleteSportIds}
+        />
       )}
-      {currentPhase === "coach" && <CoachOnboarding onComplete={handleCoachComplete} />}
+      {currentPhase === "coach" && (
+        <CoachOnboarding
+          onComplete={handleCoachComplete}
+          prefillSportIds={role === "both" ? athleteSportIds : undefined}
+        />
+      )}
     </div>
   );
 }
