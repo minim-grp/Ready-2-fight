@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useAuthStore } from "../stores/auth";
 import { useModeStore } from "../stores/mode";
 import { useProfile } from "../hooks/queries/useProfile";
@@ -28,6 +29,14 @@ export function DashboardPage() {
       {showTracking && <StreakCard />}
       {showTracking && <StreakHistoryChart />}
       {showTracking && <TrackingForm />}
+      {showTracking && (
+        <Link
+          to="/app/crs/test"
+          className="inline-block rounded bg-amber-500 px-4 py-2 text-sm font-medium text-slate-900"
+        >
+          CRS-Fitnesstest starten
+        </Link>
+      )}
 
       {!showTracking && profile.data && (
         <p className="text-sm text-slate-500">Coach-Dashboard folgt in Sprint 7.</p>
