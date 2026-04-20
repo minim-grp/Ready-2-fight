@@ -141,6 +141,7 @@ CREATE TEMP TABLE _crs_test_a1 ON COMMIT DROP AS
    WHERE athlete_id = 'a1111111-1111-1111-1111-a11111111111'
      AND status = 'in_progress'
    LIMIT 1;
+GRANT SELECT ON _crs_test_a1 TO authenticated;
 
 
 -- ############################################################
