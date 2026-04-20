@@ -1,6 +1,12 @@
 -- ============================================================
 -- READY 2 FIGHT — pgTAP: CRS-Test RPCs
 -- Roadmap-Schritt 1.15.
+--
+-- Hinweis: pgTAP-Assertions muessen per SELECT auf Top-Level laufen.
+-- `PERFORM ok(...)` innerhalb eines DO-Blocks verwirft die TAP-Zeile,
+-- der interne Zaehler wandert trotzdem weiter — Folge: Plan-Mismatch
+-- und "Tests out of sequence"-Parse-Error. Deshalb: Aktionen im DO,
+-- Zustands-Assertions danach per SELECT auf dem DB-Zustand.
 -- ============================================================
 
 BEGIN;
@@ -72,7 +78,7 @@ ON CONFLICT (id) DO NOTHING;
 
 
 -- ############################################################
--- T1: start_crs_test legt Row mit status=in_progress an
+-- T1: start_crs_test legt Row mit status=in_progress an (3 Assertions)
 -- ############################################################
 
 SET LOCAL ROLE authenticated;
@@ -113,208 +119,190 @@ SELECT tests.throws_with_state(
 --     liefert dieselbe Test-ID zurueck
 -- ############################################################
 
-DO $$
-DECLARE
-  v_id1 UUID;
-  v_id2 UUID;
-BEGIN
-  EXECUTE 'SET LOCAL ROLE authenticated';
-  EXECUTE format('SET LOCAL "request.jwt.claims" = %L',
-    json_build_object('sub', 'a2222222-2222-2222-2222-a22222222222', 'role', 'authenticated')::text);
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub":"a2222222-2222-2222-2222-a22222222222","role":"authenticated"}';
 
-  SELECT public.start_crs_test('11111111-2222-3333-4444-555555555555'::uuid) INTO v_id1;
-  SELECT public.start_crs_test('11111111-2222-3333-4444-555555555555'::uuid) INTO v_id2;
+SELECT ok(
+  (SELECT public.start_crs_test('11111111-2222-3333-4444-555555555555'::uuid))
+  =
+  (SELECT public.start_crs_test('11111111-2222-3333-4444-555555555555'::uuid)),
+  'start_crs_test: idempotent via client_uuid (+)');
 
-  PERFORM ok(v_id1 = v_id2, 'start_crs_test: idempotent via client_uuid (+)');
-  EXECUTE 'RESET ROLE';
-END $$;
+RESET ROLE;
 
 
 -- ############################################################
--- T4..T6: save_crs_exercise — Happy Path + Validierung
+-- Test-ID fuer Athlet A in Temp-Tabelle cachen, damit Folge-Tests
+-- sie per Subselect einsetzen koennen.
 -- ############################################################
 
-DO $$
-DECLARE
-  v_id UUID;
-BEGIN
-  SELECT id INTO v_id FROM public.crs_tests
-    WHERE athlete_id = 'a1111111-1111-1111-1111-a11111111111'
-      AND status = 'in_progress'
-    LIMIT 1;
-
-  EXECUTE 'SET LOCAL ROLE authenticated';
-  EXECUTE format('SET LOCAL "request.jwt.claims" = %L',
-    json_build_object('sub', 'a1111111-1111-1111-1111-a11111111111', 'role', 'authenticated')::text);
-
-  PERFORM public.save_crs_exercise(v_id, 'burpees',    20);
-  PERFORM public.save_crs_exercise(v_id, 'squats',     45);
-  PERFORM public.save_crs_exercise(v_id, 'pushups',    30);
-  PERFORM public.save_crs_exercise(v_id, 'plank',      55);
-  PERFORM public.save_crs_exercise(v_id, 'high_knees', 85);
-
-  EXECUTE 'RESET ROLE';
-
-  PERFORM ok(
-    (SELECT burpees_30s         FROM public.crs_tests WHERE id = v_id) = 20 AND
-    (SELECT squats_60s          FROM public.crs_tests WHERE id = v_id) = 45 AND
-    (SELECT pushups_60s         FROM public.crs_tests WHERE id = v_id) = 30 AND
-    (SELECT plank_sec           FROM public.crs_tests WHERE id = v_id) = 55 AND
-    (SELECT high_knees_contacts FROM public.crs_tests WHERE id = v_id) = 85,
-    'save_crs_exercise: alle fuenf Uebungen persistiert (+)');
-END $$;
-
-
--- T5: ungueltige Uebung
-DO $$
-DECLARE v_id UUID;
-BEGIN
-  SELECT id INTO v_id FROM public.crs_tests
-    WHERE athlete_id = 'a1111111-1111-1111-1111-a11111111111'
-      AND status = 'in_progress'
-    LIMIT 1;
-  PERFORM tests.throws_with_state(
-    'a1111111-1111-1111-1111-a11111111111',
-    format($q$SELECT public.save_crs_exercise(%L::uuid, 'deadlift', 10)$q$, v_id),
-    'invalid_exercise',
-    'save_crs_exercise: unbekannte Uebung abgelehnt (-)');
-END $$;
-
--- T6: Wert ueber Obergrenze
-DO $$
-DECLARE v_id UUID;
-BEGIN
-  SELECT id INTO v_id FROM public.crs_tests
-    WHERE athlete_id = 'a1111111-1111-1111-1111-a11111111111'
-      AND status = 'in_progress'
-    LIMIT 1;
-  PERFORM tests.throws_with_state(
-    'a1111111-1111-1111-1111-a11111111111',
-    format($q$SELECT public.save_crs_exercise(%L::uuid, 'burpees', 9999)$q$, v_id),
-    'value_out_of_range',
-    'save_crs_exercise: unplausibel hoher Wert abgelehnt (-)');
-END $$;
-
--- T7: negativer Wert
-DO $$
-DECLARE v_id UUID;
-BEGIN
-  SELECT id INTO v_id FROM public.crs_tests
-    WHERE athlete_id = 'a1111111-1111-1111-1111-a11111111111'
-      AND status = 'in_progress'
-    LIMIT 1;
-  PERFORM tests.throws_with_state(
-    'a1111111-1111-1111-1111-a11111111111',
-    format($q$SELECT public.save_crs_exercise(%L::uuid, 'burpees', -1)$q$, v_id),
-    'invalid_value',
-    'save_crs_exercise: negativer Wert abgelehnt (-)');
-END $$;
-
--- T8: fremder Athlet darf nicht speichern
-DO $$
-DECLARE v_id UUID;
-BEGIN
-  SELECT id INTO v_id FROM public.crs_tests
-    WHERE athlete_id = 'a1111111-1111-1111-1111-a11111111111'
-      AND status = 'in_progress'
-    LIMIT 1;
-  PERFORM tests.throws_with_state(
-    'a2222222-2222-2222-2222-a22222222222',
-    format($q$SELECT public.save_crs_exercise(%L::uuid, 'burpees', 10)$q$, v_id),
-    'test_not_found',
-    'save_crs_exercise: fremder Athlet abgelehnt (-)');
-END $$;
+CREATE TEMP TABLE _crs_test_a1 ON COMMIT DROP AS
+  SELECT id FROM public.crs_tests
+   WHERE athlete_id = 'a1111111-1111-1111-1111-a11111111111'
+     AND status = 'in_progress'
+   LIMIT 1;
 
 
 -- ############################################################
--- T9..T11: complete_crs_test
+-- T4: save_crs_exercise — Happy Path, alle fuenf Uebungen
 -- ############################################################
 
-DO $$
-DECLARE v_id UUID;
-BEGIN
-  SELECT id INTO v_id FROM public.crs_tests
-    WHERE athlete_id = 'a1111111-1111-1111-1111-a11111111111'
-      AND status = 'in_progress'
-    LIMIT 1;
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub":"a1111111-1111-1111-1111-a11111111111","role":"authenticated"}';
 
-  EXECUTE 'SET LOCAL ROLE authenticated';
-  EXECUTE format('SET LOCAL "request.jwt.claims" = %L',
-    json_build_object('sub', 'a1111111-1111-1111-1111-a11111111111', 'role', 'authenticated')::text);
+SELECT public.save_crs_exercise((SELECT id FROM _crs_test_a1), 'burpees',    20);
+SELECT public.save_crs_exercise((SELECT id FROM _crs_test_a1), 'squats',     45);
+SELECT public.save_crs_exercise((SELECT id FROM _crs_test_a1), 'pushups',    30);
+SELECT public.save_crs_exercise((SELECT id FROM _crs_test_a1), 'plank',      55);
+SELECT public.save_crs_exercise((SELECT id FROM _crs_test_a1), 'high_knees', 85);
 
-  PERFORM public.complete_crs_test(v_id);
+RESET ROLE;
 
-  EXECUTE 'RESET ROLE';
+SELECT ok(
+  (SELECT burpees_30s = 20
+      AND squats_60s = 45
+      AND pushups_60s = 30
+      AND plank_sec = 55
+      AND high_knees_contacts = 85
+     FROM public.crs_tests WHERE id = (SELECT id FROM _crs_test_a1)),
+  'save_crs_exercise: alle fuenf Uebungen persistiert (+)');
 
-  PERFORM ok(
-    (SELECT status FROM public.crs_tests WHERE id = v_id) = 'completed',
-    'complete_crs_test: status=completed (+)');
-  PERFORM ok(
-    (SELECT completed_at FROM public.crs_tests WHERE id = v_id) IS NOT NULL,
-    'complete_crs_test: completed_at gesetzt (+)');
-  PERFORM ok(
-    EXISTS(SELECT 1 FROM audit.events WHERE event_type = 'crs_test_completed' AND target_id = v_id),
-    'complete_crs_test: audit-Eintrag geschrieben');
-END $$;
 
+-- ############################################################
+-- T5: ungueltige Uebung -> invalid_exercise
+-- ############################################################
+
+SELECT tests.throws_with_state(
+  'a1111111-1111-1111-1111-a11111111111',
+  format($q$SELECT public.save_crs_exercise(%L::uuid, 'deadlift', 10)$q$,
+         (SELECT id FROM _crs_test_a1)),
+  'invalid_exercise',
+  'save_crs_exercise: unbekannte Uebung abgelehnt (-)');
+
+
+-- ############################################################
+-- T6: Wert ueber Obergrenze -> value_out_of_range
+-- ############################################################
+
+SELECT tests.throws_with_state(
+  'a1111111-1111-1111-1111-a11111111111',
+  format($q$SELECT public.save_crs_exercise(%L::uuid, 'burpees', 9999)$q$,
+         (SELECT id FROM _crs_test_a1)),
+  'value_out_of_range',
+  'save_crs_exercise: unplausibel hoher Wert abgelehnt (-)');
+
+
+-- ############################################################
+-- T7: negativer Wert -> invalid_value
+-- ############################################################
+
+SELECT tests.throws_with_state(
+  'a1111111-1111-1111-1111-a11111111111',
+  format($q$SELECT public.save_crs_exercise(%L::uuid, 'burpees', -1)$q$,
+         (SELECT id FROM _crs_test_a1)),
+  'invalid_value',
+  'save_crs_exercise: negativer Wert abgelehnt (-)');
+
+
+-- ############################################################
+-- T8: fremder Athlet darf nicht speichern -> test_not_found
+-- ############################################################
+
+SELECT tests.throws_with_state(
+  'a2222222-2222-2222-2222-a22222222222',
+  format($q$SELECT public.save_crs_exercise(%L::uuid, 'burpees', 10)$q$,
+         (SELECT id FROM _crs_test_a1)),
+  'test_not_found',
+  'save_crs_exercise: fremder Athlet abgelehnt (-)');
+
+
+-- ############################################################
+-- T9: complete_crs_test — Status + completed_at + Audit (3 Assertions)
+-- ############################################################
+
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub":"a1111111-1111-1111-1111-a11111111111","role":"authenticated"}';
+
+SELECT public.complete_crs_test((SELECT id FROM _crs_test_a1));
+
+RESET ROLE;
+
+SELECT is(
+  (SELECT status FROM public.crs_tests WHERE id = (SELECT id FROM _crs_test_a1)),
+  'completed',
+  'complete_crs_test: status=completed (+)');
+
+SELECT ok(
+  (SELECT completed_at IS NOT NULL FROM public.crs_tests
+    WHERE id = (SELECT id FROM _crs_test_a1)),
+  'complete_crs_test: completed_at gesetzt (+)');
+
+SELECT ok(
+  EXISTS(SELECT 1 FROM audit.events
+    WHERE event_type = 'crs_test_completed'
+      AND target_id = (SELECT id FROM _crs_test_a1)),
+  'complete_crs_test: audit-Eintrag geschrieben');
+
+
+-- ############################################################
 -- T12: doppeltes Complete -> test_not_in_progress
-DO $$
-DECLARE v_id UUID;
-BEGIN
-  SELECT id INTO v_id FROM public.crs_tests
-    WHERE athlete_id = 'a1111111-1111-1111-1111-a11111111111'
-      AND status = 'completed'
-    LIMIT 1;
-  PERFORM tests.throws_with_state(
-    'a1111111-1111-1111-1111-a11111111111',
-    format($q$SELECT public.complete_crs_test(%L::uuid)$q$, v_id),
-    'test_not_in_progress',
-    'complete_crs_test: abgeschlossener Test kann nicht erneut (-)');
-END $$;
+-- ############################################################
+
+SELECT tests.throws_with_state(
+  'a1111111-1111-1111-1111-a11111111111',
+  format($q$SELECT public.complete_crs_test(%L::uuid)$q$, (SELECT id FROM _crs_test_a1)),
+  'test_not_in_progress',
+  'complete_crs_test: abgeschlossener Test kann nicht erneut (-)');
 
 
 -- ############################################################
--- T13..T15: abort_crs_test
+-- T13: abort_crs_test — neuer Test, abort, Status + Audit + Double-Abort
 -- ############################################################
 
-DO $$
-DECLARE v_id UUID;
-BEGIN
-  -- neuer Test fuer Abort-Szenario
-  EXECUTE 'SET LOCAL ROLE authenticated';
-  EXECUTE format('SET LOCAL "request.jwt.claims" = %L',
-    json_build_object('sub', 'a1111111-1111-1111-1111-a11111111111', 'role', 'authenticated')::text);
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub":"a1111111-1111-1111-1111-a11111111111","role":"authenticated"}';
 
-  SELECT public.start_crs_test(NULL) INTO v_id;
-  PERFORM public.abort_crs_test(v_id);
+CREATE TEMP TABLE _crs_abort ON COMMIT DROP AS
+  SELECT public.start_crs_test(NULL) AS id;
 
-  EXECUTE 'RESET ROLE';
+SELECT public.abort_crs_test((SELECT id FROM _crs_abort));
 
-  PERFORM ok(
-    (SELECT status FROM public.crs_tests WHERE id = v_id) = 'aborted',
-    'abort_crs_test: status=aborted (+)');
-  PERFORM ok(
-    EXISTS(SELECT 1 FROM audit.events WHERE event_type = 'crs_test_aborted' AND target_id = v_id),
-    'abort_crs_test: audit-Eintrag geschrieben');
+RESET ROLE;
 
-  -- Doppeltes Abort -> test_not_in_progress
-  PERFORM tests.throws_with_state(
-    'a1111111-1111-1111-1111-a11111111111',
-    format($q$SELECT public.abort_crs_test(%L::uuid)$q$, v_id),
-    'test_not_in_progress',
-    'abort_crs_test: bereits abgebrochener Test (-)');
-END $$;
+SELECT is(
+  (SELECT status FROM public.crs_tests WHERE id = (SELECT id FROM _crs_abort)),
+  'aborted',
+  'abort_crs_test: status=aborted (+)');
+
+SELECT ok(
+  EXISTS(SELECT 1 FROM audit.events
+    WHERE event_type = 'crs_test_aborted'
+      AND target_id = (SELECT id FROM _crs_abort)),
+  'abort_crs_test: audit-Eintrag geschrieben');
+
+SELECT tests.throws_with_state(
+  'a1111111-1111-1111-1111-a11111111111',
+  format($q$SELECT public.abort_crs_test(%L::uuid)$q$, (SELECT id FROM _crs_abort)),
+  'test_not_in_progress',
+  'abort_crs_test: bereits abgebrochener Test (-)');
 
 
 -- ############################################################
 -- T16: Nicht-authentifiziert -> not_authenticated
+--      Claims explizit leeren, da throws_with_state mit NULL-User
+--      Rolle/Claims nicht anfasst.
 -- ############################################################
+
+SET LOCAL ROLE anon;
+SET LOCAL "request.jwt.claims" = '{}';
 
 SELECT tests.throws_with_state(
   NULL,
   $$SELECT public.start_crs_test(NULL)$$,
   'not_authenticated',
   'start_crs_test: ohne JWT abgelehnt (-)');
+
+RESET ROLE;
 
 
 SELECT * FROM finish();
