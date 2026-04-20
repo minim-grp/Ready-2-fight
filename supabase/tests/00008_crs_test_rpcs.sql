@@ -290,11 +290,12 @@ SELECT tests.throws_with_state(
 
 -- ############################################################
 -- T16: Nicht-authentifiziert -> not_authenticated
---      Claims explizit leeren, da throws_with_state mit NULL-User
---      Rolle/Claims nicht anfasst.
+--      Claims explizit auf '{}' setzen, damit auth.uid() NULL wird.
+--      Rolle bleibt Superuser, damit das tests-Schema erreichbar ist
+--      (anon haette keinen USAGE-Grant auf schema tests).
+--      start_crs_test prueft nur die JWT-Claim, nicht die Rolle.
 -- ############################################################
 
-SET LOCAL ROLE anon;
 SET LOCAL "request.jwt.claims" = '{}';
 
 SELECT tests.throws_with_state(
@@ -302,8 +303,6 @@ SELECT tests.throws_with_state(
   $$SELECT public.start_crs_test(NULL)$$,
   'not_authenticated',
   'start_crs_test: ohne JWT abgelehnt (-)');
-
-RESET ROLE;
 
 
 SELECT * FROM finish();
