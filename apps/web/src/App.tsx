@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { AppLayout } from "./components/layout/AppLayout";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import { LandingPage } from "./pages/Landing";
@@ -9,15 +9,8 @@ import { OnboardingPage } from "./pages/onboarding/OnboardingPage";
 import { CodesPage } from "./pages/CodesPage";
 import { EngagementsPage } from "./pages/EngagementsPage";
 import { CrsTestPage } from "./pages/CrsTestPage";
-
-function Placeholder({ title }: { title: string }) {
-  return (
-    <section className="space-y-2">
-      <h1 className="text-2xl font-semibold">{title}</h1>
-      <p className="text-sm text-slate-500">Folgt in kommendem Sprint.</p>
-    </section>
-  );
-}
+import { TrackingPage } from "./pages/TrackingPage";
+import { SettingsPage } from "./pages/SettingsPage";
 
 export default function App() {
   return (
@@ -31,12 +24,12 @@ export default function App() {
         <Route path="/app" element={<AppLayout />}>
           <Route index element={<DashboardPage />} />
           <Route path="dashboard" element={<DashboardPage />} />
-          <Route path="tracking" element={<Placeholder title="Tracking" />} />
+          <Route path="tracking" element={<TrackingPage />} />
           <Route path="crs/test" element={<CrsTestPage />} />
           <Route path="engagements" element={<EngagementsPage />} />
-          <Route path="athletes" element={<Placeholder title="Athleten" />} />
+          <Route path="athletes" element={<Navigate to="/app/engagements" replace />} />
           <Route path="codes" element={<CodesPage />} />
-          <Route path="settings" element={<Placeholder title="Profil" />} />
+          <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Route>
     </Routes>

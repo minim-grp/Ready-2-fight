@@ -13,7 +13,7 @@ const ATHLETE_ITEMS: NavItem[] = [
 
 const COACH_ITEMS: NavItem[] = [
   { to: "/app/dashboard", label: "Dashboard" },
-  { to: "/app/athletes", label: "Athleten" },
+  { to: "/app/engagements", label: "Athleten" },
   { to: "/app/codes", label: "Codes" },
   { to: "/app/settings", label: "Profil" },
 ];
@@ -21,7 +21,7 @@ const COACH_ITEMS: NavItem[] = [
 const BOTH_ITEMS: NavItem[] = [
   { to: "/app/dashboard", label: "Heute" },
   { to: "/app/tracking", label: "Tracking" },
-  { to: "/app/athletes", label: "Athleten" },
+  { to: "/app/engagements", label: "Coaches" },
   { to: "/app/codes", label: "Codes" },
   { to: "/app/settings", label: "Profil" },
 ];

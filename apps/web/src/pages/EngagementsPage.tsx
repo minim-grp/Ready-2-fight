@@ -27,29 +27,23 @@ export function EngagementsPage() {
     );
   }
 
-  if (!showRedeem) {
-    return (
-      <section className="space-y-2">
-        <h1 className="text-2xl font-semibold">Coaches</h1>
-        <p className="text-sm text-slate-500">
-          Engagement-Codes koennen nur Athleten einloesen. Wechsle in den Athlete-Modus
-          oder lege ein Athlete-Profil an.
-        </p>
-      </section>
-    );
-  }
+  const isCoachView = role === "coach" || (role === "both" && mode === "coach");
+  const title = isCoachView ? "Athleten" : "Coaches";
+  const subtitle = isCoachView
+    ? "Uebersicht aller aktiven und vergangenen Betreuungen."
+    : "Du hast einen Code von deinem Coach bekommen? Hier einloesen.";
 
   return (
     <section className="space-y-6">
       <header>
-        <h1 className="text-2xl font-semibold">Coaches</h1>
-        <p className="text-sm text-slate-400">
-          Du hast einen Code von deinem Coach bekommen? Hier einloesen.
-        </p>
+        <h1 className="text-2xl font-semibold">{title}</h1>
+        <p className="text-sm text-slate-400">{subtitle}</p>
       </header>
-      <RedeemForm />
+      {showRedeem && <RedeemForm />}
       <section className="space-y-2">
-        <h2 className="text-lg font-semibold">Deine Engagements</h2>
+        <h2 className="text-lg font-semibold">
+          {isCoachView ? "Deine Athleten" : "Deine Engagements"}
+        </h2>
         <EngagementsList />
       </section>
     </section>

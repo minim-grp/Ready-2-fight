@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { supabase } from "../lib/supabase";
 import { logger } from "../lib/logger";
 import type { Database } from "../lib/database.types";
 import { Field } from "../components/form/Field";
+import { BirthDateField } from "../components/form/BirthDateField";
 
 type UserRole = Database["public"]["Enums"]["user_role"];
 
@@ -44,12 +45,6 @@ export function RegisterPage() {
   const [isCoach, setIsCoach] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const maxBirthDate = useMemo(() => {
-    const d = new Date();
-    d.setFullYear(d.getFullYear() - MIN_AGE_YEARS);
-    return d.toISOString().slice(0, 10);
-  }, []);
 
   function validate(): FieldErrors {
     const next: FieldErrors = {};
@@ -165,15 +160,13 @@ export function RegisterPage() {
           required
         />
 
-        <Field
+        <BirthDateField
           id="birthDate"
           label="Geburtsdatum"
-          type="date"
           value={birthDate}
           onChange={setBirthDate}
-          max={maxBirthDate}
           error={errors.birthDate}
-          hint={`Mindestalter ${MIN_AGE_YEARS} Jahre.`}
+          hint={`Format TT.MM.JJJJ – Mindestalter ${MIN_AGE_YEARS} Jahre.`}
           required
         />
 

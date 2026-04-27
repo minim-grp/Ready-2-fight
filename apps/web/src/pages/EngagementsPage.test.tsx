@@ -89,18 +89,20 @@ describe("EngagementsPage", () => {
     expect(screen.getByRole("alert")).toHaveTextContent(/nicht geladen/i);
   });
 
-  it("verweigert reinen Coach das Form", () => {
+  it("verweigert reinen Coach das Form, zeigt aber Engagement-Liste", () => {
     setProfile("coach");
     render(<EngagementsPage />);
     expect(screen.queryByLabelText(/Engagement-Code/i)).not.toBeInTheDocument();
-    expect(screen.getByText(/nur Athleten/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(/Athleten/);
+    expect(screen.getByTestId("engagements-list")).toBeInTheDocument();
   });
 
-  it("verweigert Both im Coach-Modus", () => {
+  it("verweigert Both im Coach-Modus, zeigt aber Engagement-Liste", () => {
     setProfile("both");
     modeState.value = "coach";
     render(<EngagementsPage />);
     expect(screen.queryByLabelText(/Engagement-Code/i)).not.toBeInTheDocument();
+    expect(screen.getByTestId("engagements-list")).toBeInTheDocument();
   });
 
   it("rendert Form fuer Athlet", () => {
