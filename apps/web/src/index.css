@@ -1,1 +1,76 @@
 @import "tailwindcss";
+
+/* ============================================================
+   Ready 2 Fight — Calm-Strength Design Tokens
+   60% Calm/Medito (premium, ruhig) + 40% Cal AI (focus, accent)
+   Quelle: r2f-design-pkg/project/hifi/design-system.css
+============================================================ */
+
+@theme {
+  /* Surfaces — warm off-white, paper-feel */
+  --color-bg: #f4f1ec;
+  --color-bg-2: #ece7df;
+  --color-bg-3: #e2dcd2;
+  --color-paper: #faf8f4;
+  --color-paper-elev: #ffffff;
+
+  /* Hero / dark surfaces */
+  --color-night: #15140f;
+  --color-night-2: #1f1d17;
+  --color-night-soft: #2b2823;
+
+  /* Ink */
+  --color-ink: #1a1814;
+  --color-ink-2: #3a362f;
+  --color-ink-3: #6a6359;
+  --color-ink-4: #9c9385;
+  --color-on-night: #f4f1ec;
+  --color-on-night-2: #b8b0a0;
+  --color-on-night-3: #8a8273;
+
+  /* Accent — gedaempftes warmes Crimson */
+  --color-accent: #c73e2a;
+  --color-accent-2: #a82f1e;
+  --color-accent-soft: #f4d9d2;
+
+  /* Earthy secondaries */
+  --color-olive: #6b6a3d;
+  --color-sand: #d4c29a;
+  --color-bone: #e8e1d0;
+
+  /* Type */
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --radius-2xl: 36px;
+
+  /* Shadows — soft, paper-feel, never glassy */
+  --shadow-1: 0 1px 2px rgba(26, 24, 20, 0.04), 0 1px 1px rgba(26, 24, 20, 0.03);
+  --shadow-2: 0 6px 18px rgba(26, 24, 20, 0.06), 0 1px 2px rgba(26, 24, 20, 0.04);
+  --shadow-3: 0 14px 40px rgba(26, 24, 20, 0.1), 0 2px 6px rgba(26, 24, 20, 0.05);
+  --shadow-night: 0 14px 40px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------- Lines (rgba — separate, not in @theme) ---------- */
+:root {
+  --line: rgba(26, 24, 20, 0.1);
+  --line-2: rgba(26, 24, 20, 0.18);
+  --line-night: rgba(244, 241, 236, 0.1);
+  --line-night-2: rgba(244, 241, 236, 0.18);
+}
+
+/* ---------- Body base ---------- */
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
