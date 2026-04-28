@@ -16,7 +16,15 @@ import {
   nextStep,
   type CrsStep,
 } from "../lib/crsTest";
+import {
+  clearCrsRecovery,
+  loadCrsRecovery,
+  newCrsClientUuid,
+  saveCrsRecovery,
+} from "../lib/crsRecovery";
 import { logger } from "../lib/logger";
+
+type Mode = "fresh" | "recovery-prompt" | "active";
 
 export function CrsTestPage() {
   const navigate = useNavigate();
@@ -28,6 +36,29 @@ export function CrsTestPage() {
   const [step, setStep] = useState<CrsStep>({ kind: "disclaimer" });
   const [testId, setTestId] = useState<string | null>(null);
   const [accepted, setAccepted] = useState(false);
+  const [clientUuid, setClientUuid] = useState<string>(() => newCrsClientUuid());
+  const [mode, setMode] = useState<Mode>("fresh");
+  const [resuming, setResuming] = useState(false);
+
+  useEffect(() => {
+    const recovered = loadCrsRecovery();
+    if (recovered && recovered.testId !== null && recovered.step.kind !== "disclaimer") {
+      setMode("recovery-prompt");
+      setClientUuid(recovered.clientUuid);
+      setStep(recovered.step);
+      setTestId(recovered.testId);
+      setAccepted(recovered.accepted);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mode !== "active" || !testId) return;
+    if (step.kind === "result") {
+      clearCrsRecovery();
+      return;
+    }
+    saveCrsRecovery({ clientUuid, testId, step, accepted });
+  }, [mode, step, testId, accepted, clientUuid]);
 
   function advance() {
     setStep((s) => nextStep(s));
@@ -35,8 +66,9 @@ export function CrsTestPage() {
 
   async function handleStart() {
     try {
-      const id = await start.mutateAsync(undefined);
+      const id = await start.mutateAsync(clientUuid);
       setTestId(id);
+      setMode("active");
       advance();
     } catch (err) {
       logger.error("crs_start_failed", err);
@@ -44,14 +76,40 @@ export function CrsTestPage() {
     }
   }
 
+  async function handleResume() {
+    setResuming(true);
+    try {
+      const id = await start.mutateAsync(clientUuid);
+      setTestId(id);
+      setMode("active");
+    } catch (err) {
+      logger.error("crs_resume_failed", err);
+      toast.error("Wiederaufnahme fehlgeschlagen. Bitte neu starten.");
+      handleDiscardRecovery();
+    } finally {
+      setResuming(false);
+    }
+  }
+
+  function handleDiscardRecovery() {
+    clearCrsRecovery();
+    setStep({ kind: "disclaimer" });
+    setTestId(null);
+    setAccepted(false);
+    setClientUuid(newCrsClientUuid());
+    setMode("fresh");
+  }
+
   async function handleAbort() {
     if (!testId) {
+      clearCrsRecovery();
       void navigate("/app/dashboard");
       return;
     }
     if (!window.confirm("Test wirklich abbrechen? Deine Werte gehen verloren.")) return;
     try {
       await abort.mutateAsync(testId);
+      clearCrsRecovery();
       void navigate("/app/dashboard");
     } catch (err) {
       logger.error("crs_abort_failed", err);
@@ -91,7 +149,7 @@ export function CrsTestPage() {
             Standardisierter Test: 5 Uebungen a 60 Sekunden. PRD §06.
           </p>
         </div>
-        {step.kind !== "disclaimer" && step.kind !== "result" && (
+        {mode === "active" && step.kind !== "result" && (
           <button
             type="button"
             onClick={() => void handleAbort()}
@@ -102,7 +160,16 @@ export function CrsTestPage() {
         )}
       </header>
 
-      {step.kind === "disclaimer" && (
+      {mode === "recovery-prompt" && (
+        <RecoveryPrompt
+          step={step}
+          onResume={() => void handleResume()}
+          onDiscard={handleDiscardRecovery}
+          pending={resuming || start.isPending}
+        />
+      )}
+
+      {mode !== "recovery-prompt" && step.kind === "disclaimer" && (
         <DisclaimerStep
           accepted={accepted}
           onAcceptedChange={setAccepted}
@@ -111,7 +178,7 @@ export function CrsTestPage() {
         />
       )}
 
-      {step.kind === "warmup" && (
+      {mode === "active" && step.kind === "warmup" && (
         <TimerStep
           key={`warmup-${step.round}`}
           title={`Warm-up ${step.round + 1} / 3`}
@@ -122,7 +189,7 @@ export function CrsTestPage() {
         />
       )}
 
-      {step.kind === "exercise" && step.phase === "countdown" && (
+      {mode === "active" && step.kind === "exercise" && step.phase === "countdown" && (
         <TimerStep
           key={`exercise-${step.index}`}
           title={`Uebung ${step.index + 1} / 5 – ${getCrsExercise(step.index).label}`}
@@ -133,7 +200,7 @@ export function CrsTestPage() {
         />
       )}
 
-      {step.kind === "exercise" && step.phase === "input" && (
+      {mode === "active" && step.kind === "exercise" && step.phase === "input" && (
         <ExerciseInputStep
           label={getCrsExercise(step.index).label}
           unit={getCrsExercise(step.index).unit}
@@ -143,7 +210,7 @@ export function CrsTestPage() {
         />
       )}
 
-      {step.kind === "cooldown" && (
+      {mode === "active" && step.kind === "cooldown" && (
         <TimerStep
           key="cooldown"
           title="Cool-down"
@@ -158,6 +225,60 @@ export function CrsTestPage() {
         <ResultStep onBack={() => void navigate("/app/dashboard")} />
       )}
     </section>
+  );
+}
+
+function describeStep(step: CrsStep): string {
+  switch (step.kind) {
+    case "disclaimer":
+      return "Disclaimer";
+    case "warmup":
+      return `Warm-up ${step.round + 1} / 3`;
+    case "exercise":
+      return `Uebung ${step.index + 1} / 5 – ${getCrsExercise(step.index).label} (${
+        step.phase === "countdown" ? "Countdown" : "Werteingabe"
+      })`;
+    case "cooldown":
+      return "Cool-down";
+    case "result":
+      return "Ergebnis";
+  }
+}
+
+type RecoveryProps = {
+  step: CrsStep;
+  onResume: () => void;
+  onDiscard: () => void;
+  pending: boolean;
+};
+
+function RecoveryPrompt({ step, onResume, onDiscard, pending }: RecoveryProps) {
+  return (
+    <div className="space-y-4 rounded-lg border border-amber-700 bg-amber-950/40 p-5">
+      <h2 className="text-lg font-semibold">Laufenden Test fortsetzen?</h2>
+      <p className="text-sm text-slate-200">
+        Wir haben einen unterbrochenen CRS-Test gefunden. Letzter Schritt:{" "}
+        <strong>{describeStep(step)}</strong>.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          disabled={pending}
+          onClick={onResume}
+          className="rounded bg-amber-500 px-4 py-2 text-sm font-medium text-slate-900 disabled:opacity-50"
+        >
+          {pending ? "Lade …" : "Fortsetzen"}
+        </button>
+        <button
+          type="button"
+          disabled={pending}
+          onClick={onDiscard}
+          className="rounded border border-slate-700 px-3 py-1.5 text-sm text-slate-200 disabled:opacity-50"
+        >
+          Neu starten
+        </button>
+      </div>
+    </div>
   );
 }
 

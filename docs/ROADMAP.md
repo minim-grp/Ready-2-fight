@@ -87,7 +87,7 @@ Schritt-für-Schritt-Plan vom leeren Repo bis zur vollständigen App mit KI-Funk
 ### Sprint 5 · CRS-Test (PRD §06)
 
 **1.15** Test-State-Machine: disclaimer → warmup → 5×exercise → cooldown → result. Persistiert in `crs_tests` mit Status `in_progress`.
-**1.16** Interruption-Recovery: App-Kill, Anruf, Browser-Reload führen zurück zum letzten Schritt via `client_uuid`.
+**1.16** ✅ Interruption-Recovery: App-Kill, Anruf, Browser-Reload führen zurück zum letzten Schritt via `client_uuid`. _(2026-04-28: client_uuid in `start_crs_test` idempotent, Recovery-State in `localStorage` mit Schema-Versioning, Recovery-Banner auf CrsTestPage.)_
 **1.17** Score-Berechnung als Edge Function (Formel aus PRD Anhang B).
 **1.18** Result-Screen mit Rang, Radar-Chart, Archetyp.
 **1.19** CRS-Verlaufsdiagramm im Athleten-Profil.
