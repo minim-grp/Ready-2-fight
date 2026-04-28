@@ -83,15 +83,40 @@ export function CoachOnboarding({ onComplete, prefillSportIds }: Props) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-md space-y-6">
+    <div className="mx-auto w-full max-w-md space-y-6 px-6 py-10">
       <header>
-        <p className="text-xs font-medium tracking-wider text-slate-500 uppercase">
+        <p
+          className="text-xs tracking-[0.18em] uppercase"
+          style={{
+            fontFamily: "var(--font-mono)",
+            color: "var(--color-ink-3)",
+          }}
+        >
           Schritt {step + 1} von 2
         </p>
-        <h1 className="mt-1 text-2xl font-semibold">
-          {step === 0 ? "Dein Gym / Studio" : "Deine Spezialisierungen"}
+        <h1
+          className="mt-2 text-3xl"
+          style={{
+            fontFamily: "var(--font-display)",
+            letterSpacing: "-0.02em",
+            color: "var(--color-ink)",
+          }}
+        >
+          {step === 0 ? (
+            <>
+              Dein{" "}
+              <em style={{ fontStyle: "italic", color: "var(--color-accent)" }}>Gym</em>
+            </>
+          ) : (
+            <>
+              Deine{" "}
+              <em style={{ fontStyle: "italic", color: "var(--color-accent)" }}>
+                Spezialisierungen
+              </em>
+            </>
+          )}
         </h1>
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-3 text-sm" style={{ color: "var(--color-ink-2)" }}>
           {step === 0
             ? "Wo trainierst du deine Athleten?"
             : prefillApplied
@@ -101,63 +126,52 @@ export function CoachOnboarding({ onComplete, prefillSportIds }: Props) {
       </header>
 
       {step === 0 && (
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="gymName" className="mb-1 block text-sm font-medium">
-              Gym / Studio Name
-            </label>
-            <input
-              id="gymName"
-              type="text"
-              value={gymName}
-              onChange={(e) => setGymName(e.target.value)}
-              placeholder="z.B. Fight Academy Berlin"
-              className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-slate-500"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="city" className="mb-1 block text-sm font-medium">
-              Stadt
-            </label>
-            <input
-              id="city"
-              type="text"
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              placeholder="z.B. Berlin"
-              className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-slate-500"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="certification" className="mb-1 block text-sm font-medium">
-              Zertifizierung / Lizenz (optional)
-            </label>
-            <input
-              id="certification"
-              type="text"
-              value={certification}
-              onChange={(e) => setCertification(e.target.value)}
-              placeholder="z.B. A-Lizenz DOSB"
-              className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-slate-500"
-            />
-          </div>
+        <div
+          className="space-y-4 rounded-[22px] p-5"
+          style={{
+            backgroundColor: "var(--color-paper)",
+            boxShadow: "var(--shadow-1)",
+            border: "1px solid var(--line)",
+          }}
+        >
+          <CoachField
+            id="gymName"
+            label="Gym / Studio Name"
+            placeholder="z.B. Fight Academy Berlin"
+            value={gymName}
+            onChange={setGymName}
+          />
+          <CoachField
+            id="city"
+            label="Stadt"
+            placeholder="z.B. Berlin"
+            value={city}
+            onChange={setCity}
+          />
+          <CoachField
+            id="certification"
+            label="Zertifizierung / Lizenz (optional)"
+            placeholder="z.B. A-Lizenz DOSB"
+            value={certification}
+            onChange={setCertification}
+          />
         </div>
       )}
 
       {step === 1 && (
         <div className="space-y-4">
           {sports.isLoading && (
-            <p className="text-sm text-slate-500">Lade Sportarten …</p>
+            <p className="text-sm" style={{ color: "var(--color-ink-3)" }}>
+              Lade Sportarten …
+            </p>
           )}
           {sports.error && (
-            <p className="text-sm text-red-400">
+            <p className="text-sm" style={{ color: "var(--color-accent-2)" }}>
               Sportarten konnten nicht geladen werden.
             </p>
           )}
           {sports.data && (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2.5">
               {sports.data.map((sport) => {
                 const active = selectedSpecialties.includes(sport.slug);
                 return (
@@ -165,11 +179,16 @@ export function CoachOnboarding({ onComplete, prefillSportIds }: Props) {
                     key={sport.id}
                     type="button"
                     onClick={() => toggleSpecialty(sport.slug)}
-                    className={`rounded-lg border px-3 py-2.5 text-left text-sm font-medium transition ${
-                      active
-                        ? "border-slate-400 bg-slate-800"
-                        : "border-slate-700 bg-slate-900 hover:border-slate-600"
-                    }`}
+                    className="rounded-2xl px-4 py-3 text-left text-sm font-medium transition"
+                    style={{
+                      backgroundColor: active
+                        ? "var(--color-accent-soft)"
+                        : "var(--color-paper)",
+                      border: active
+                        ? "1px solid var(--color-accent)"
+                        : "1px solid var(--line)",
+                      color: "var(--color-ink)",
+                    }}
                   >
                     {sport.name}
                   </button>
@@ -181,7 +200,7 @@ export function CoachOnboarding({ onComplete, prefillSportIds }: Props) {
       )}
 
       {error && (
-        <p className="text-sm text-red-400" role="alert">
+        <p className="text-sm" role="alert" style={{ color: "var(--color-accent-2)" }}>
           {error}
         </p>
       )}
@@ -191,7 +210,12 @@ export function CoachOnboarding({ onComplete, prefillSportIds }: Props) {
           <button
             type="button"
             onClick={() => setStep(step - 1)}
-            className="rounded-md border border-slate-700 px-4 py-2.5 text-sm font-medium hover:border-slate-500"
+            className="rounded-2xl px-5 py-3 text-sm font-medium"
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid var(--line-2)",
+              color: "var(--color-ink)",
+            }}
           >
             Zurueck
           </button>
@@ -202,7 +226,11 @@ export function CoachOnboarding({ onComplete, prefillSportIds }: Props) {
             type="button"
             disabled={!canAdvance()}
             onClick={() => setStep(step + 1)}
-            className="flex-1 rounded-md bg-white py-2.5 text-sm font-medium text-slate-900 disabled:opacity-50"
+            className="flex-1 rounded-2xl py-3 text-sm font-medium disabled:opacity-50"
+            style={{
+              backgroundColor: "var(--color-accent)",
+              color: "var(--color-on-night)",
+            }}
           >
             Weiter
           </button>
@@ -211,12 +239,51 @@ export function CoachOnboarding({ onComplete, prefillSportIds }: Props) {
             type="button"
             disabled={isSubmitting || !canAdvance()}
             onClick={() => void handleSubmit()}
-            className="flex-1 rounded-md bg-white py-2.5 text-sm font-medium text-slate-900 disabled:opacity-50"
+            className="flex-1 rounded-2xl py-3 text-sm font-medium disabled:opacity-50"
+            style={{
+              backgroundColor: "var(--color-accent)",
+              color: "var(--color-on-night)",
+            }}
           >
             {isSubmitting ? "Speichere …" : "Profil fertigstellen"}
           </button>
         )}
       </div>
+    </div>
+  );
+}
+
+type FieldProps = {
+  id: string;
+  label: string;
+  placeholder: string;
+  value: string;
+  onChange: (next: string) => void;
+};
+
+function CoachField({ id, label, placeholder, value, onChange }: FieldProps) {
+  return (
+    <div>
+      <label
+        htmlFor={id}
+        className="mb-1 block text-sm font-medium"
+        style={{ color: "var(--color-ink)" }}
+      >
+        {label}
+      </label>
+      <input
+        id={id}
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full rounded-md px-3 py-2 text-sm outline-none"
+        style={{
+          backgroundColor: "var(--color-paper-elev)",
+          border: "1px solid var(--line)",
+          color: "var(--color-ink)",
+        }}
+      />
     </div>
   );
 }
