@@ -103,15 +103,40 @@ export function AthleteOnboarding({ onComplete, onSportsChange }: Props) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-md space-y-6">
+    <div className="mx-auto w-full max-w-md space-y-6 px-6 py-10">
       <header>
-        <p className="text-xs font-medium tracking-wider text-slate-500 uppercase">
+        <p
+          className="text-xs tracking-[0.18em] uppercase"
+          style={{
+            fontFamily: "var(--font-mono)",
+            color: "var(--color-ink-3)",
+          }}
+        >
           Schritt {step + 1} von 2
         </p>
-        <h1 className="mt-1 text-2xl font-semibold">
-          {step === 0 ? "Deine Sportarten" : "Ueber dich"}
+        <h1
+          className="mt-2 text-3xl"
+          style={{
+            fontFamily: "var(--font-display)",
+            letterSpacing: "-0.02em",
+            color: "var(--color-ink)",
+          }}
+        >
+          {step === 0 ? (
+            <>
+              Deine{" "}
+              <em style={{ fontStyle: "italic", color: "var(--color-accent)" }}>
+                Sportarten
+              </em>
+            </>
+          ) : (
+            <>
+              Ueber{" "}
+              <em style={{ fontStyle: "italic", color: "var(--color-accent)" }}>dich</em>
+            </>
+          )}
         </h1>
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-3 text-sm" style={{ color: "var(--color-ink-2)" }}>
           {step === 0
             ? "Waehle mindestens eine Sportart aus."
             : "Optional — du kannst diese Angaben spaeter ergaenzen."}
@@ -121,15 +146,17 @@ export function AthleteOnboarding({ onComplete, onSportsChange }: Props) {
       {step === 0 && (
         <div className="space-y-4">
           {sports.isLoading && (
-            <p className="text-sm text-slate-500">Lade Sportarten …</p>
+            <p className="text-sm" style={{ color: "var(--color-ink-3)" }}>
+              Lade Sportarten …
+            </p>
           )}
           {sports.error && (
-            <p className="text-sm text-red-400">
+            <p className="text-sm" style={{ color: "var(--color-accent-2)" }}>
               Sportarten konnten nicht geladen werden.
             </p>
           )}
           {sports.data && (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2.5">
               {sports.data.map((sport) => {
                 const active = selectedSports.includes(sport.id);
                 const isPrimary = primarySportId === sport.id;
@@ -138,11 +165,16 @@ export function AthleteOnboarding({ onComplete, onSportsChange }: Props) {
                     key={sport.id}
                     type="button"
                     onClick={() => toggleSport(sport.id)}
-                    className={`rounded-lg border px-3 py-2.5 text-left text-sm transition ${
-                      active
-                        ? "border-slate-400 bg-slate-800"
-                        : "border-slate-700 bg-slate-900 hover:border-slate-600"
-                    }`}
+                    className="rounded-2xl px-4 py-3 text-left text-sm transition"
+                    style={{
+                      backgroundColor: active
+                        ? "var(--color-accent-soft)"
+                        : "var(--color-paper)",
+                      border: active
+                        ? "1px solid var(--color-accent)"
+                        : "1px solid var(--line)",
+                      color: "var(--color-ink)",
+                    }}
                   >
                     <span className="font-medium">{sport.name}</span>
                     {active && selectedSports.length > 1 && (
@@ -152,11 +184,13 @@ export function AthleteOnboarding({ onComplete, onSportsChange }: Props) {
                           e.stopPropagation();
                           setPrimarySportId(sport.id);
                         }}
-                        className={`mt-1 block text-xs ${
-                          isPrimary
-                            ? "font-semibold text-white"
-                            : "text-slate-500 hover:text-slate-300"
-                        }`}
+                        className="mt-1 block text-xs"
+                        style={{
+                          color: isPrimary
+                            ? "var(--color-accent-2)"
+                            : "var(--color-ink-3)",
+                          fontWeight: isPrimary ? 600 : 400,
+                        }}
                       >
                         {isPrimary ? "Hauptsportart" : "Als Hauptsportart"}
                       </button>
@@ -170,16 +204,32 @@ export function AthleteOnboarding({ onComplete, onSportsChange }: Props) {
       )}
 
       {step === 1 && (
-        <div className="space-y-4">
+        <div
+          className="space-y-4 rounded-[22px] p-5"
+          style={{
+            backgroundColor: "var(--color-paper)",
+            boxShadow: "var(--shadow-1)",
+            border: "1px solid var(--line)",
+          }}
+        >
           <div>
-            <label htmlFor="gender" className="mb-1 block text-sm font-medium">
+            <label
+              htmlFor="gender"
+              className="mb-1 block text-sm font-medium"
+              style={{ color: "var(--color-ink)" }}
+            >
               Geschlecht
             </label>
             <select
               id="gender"
               value={gender}
               onChange={(e) => setGender(e.target.value as Gender | "")}
-              className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-slate-500"
+              className="w-full rounded-md px-3 py-2 text-sm outline-none"
+              style={{
+                backgroundColor: "var(--color-paper-elev)",
+                border: "1px solid var(--line)",
+                color: "var(--color-ink)",
+              }}
             >
               <option value="">— Bitte waehlen —</option>
               {GENDERS.map((g) => (
@@ -192,7 +242,11 @@ export function AthleteOnboarding({ onComplete, onSportsChange }: Props) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label htmlFor="height" className="mb-1 block text-sm font-medium">
+              <label
+                htmlFor="height"
+                className="mb-1 block text-sm font-medium"
+                style={{ color: "var(--color-ink)" }}
+              >
                 Groesse (cm)
               </label>
               <input
@@ -204,11 +258,20 @@ export function AthleteOnboarding({ onComplete, onSportsChange }: Props) {
                 value={heightCm}
                 onChange={(e) => setHeightCm(e.target.value)}
                 placeholder="z.B. 178"
-                className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                className="w-full rounded-md px-3 py-2 text-sm outline-none"
+                style={{
+                  backgroundColor: "var(--color-paper-elev)",
+                  border: "1px solid var(--line)",
+                  color: "var(--color-ink)",
+                }}
               />
             </div>
             <div>
-              <label htmlFor="weight" className="mb-1 block text-sm font-medium">
+              <label
+                htmlFor="weight"
+                className="mb-1 block text-sm font-medium"
+                style={{ color: "var(--color-ink)" }}
+              >
                 Gewicht (kg)
               </label>
               <input
@@ -220,13 +283,22 @@ export function AthleteOnboarding({ onComplete, onSportsChange }: Props) {
                 value={weightKg}
                 onChange={(e) => setWeightKg(e.target.value)}
                 placeholder="z.B. 75"
-                className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                className="w-full rounded-md px-3 py-2 text-sm outline-none"
+                style={{
+                  backgroundColor: "var(--color-paper-elev)",
+                  border: "1px solid var(--line)",
+                  color: "var(--color-ink)",
+                }}
               />
             </div>
           </div>
 
           <div>
-            <label htmlFor="experience" className="mb-1 block text-sm font-medium">
+            <label
+              htmlFor="experience"
+              className="mb-1 block text-sm font-medium"
+              style={{ color: "var(--color-ink)" }}
+            >
               Erfahrung (Jahre)
             </label>
             <input
@@ -238,14 +310,19 @@ export function AthleteOnboarding({ onComplete, onSportsChange }: Props) {
               value={experienceYears}
               onChange={(e) => setExperienceYears(e.target.value)}
               placeholder="z.B. 3"
-              className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-slate-500"
+              className="w-full rounded-md px-3 py-2 text-sm outline-none"
+              style={{
+                backgroundColor: "var(--color-paper-elev)",
+                border: "1px solid var(--line)",
+                color: "var(--color-ink)",
+              }}
             />
           </div>
         </div>
       )}
 
       {error && (
-        <p className="text-sm text-red-400" role="alert">
+        <p className="text-sm" role="alert" style={{ color: "var(--color-accent-2)" }}>
           {error}
         </p>
       )}
@@ -255,7 +332,12 @@ export function AthleteOnboarding({ onComplete, onSportsChange }: Props) {
           <button
             type="button"
             onClick={() => setStep(step - 1)}
-            className="rounded-md border border-slate-700 px-4 py-2.5 text-sm font-medium hover:border-slate-500"
+            className="rounded-2xl px-5 py-3 text-sm font-medium"
+            style={{
+              backgroundColor: "transparent",
+              border: "1px solid var(--line-2)",
+              color: "var(--color-ink)",
+            }}
           >
             Zurueck
           </button>
@@ -266,7 +348,11 @@ export function AthleteOnboarding({ onComplete, onSportsChange }: Props) {
             type="button"
             disabled={!canAdvance()}
             onClick={() => setStep(step + 1)}
-            className="flex-1 rounded-md bg-white py-2.5 text-sm font-medium text-slate-900 disabled:opacity-50"
+            className="flex-1 rounded-2xl py-3 text-sm font-medium disabled:opacity-50"
+            style={{
+              backgroundColor: "var(--color-accent)",
+              color: "var(--color-on-night)",
+            }}
           >
             Weiter
           </button>
@@ -275,7 +361,11 @@ export function AthleteOnboarding({ onComplete, onSportsChange }: Props) {
             type="button"
             disabled={isSubmitting}
             onClick={() => void handleSubmit()}
-            className="flex-1 rounded-md bg-white py-2.5 text-sm font-medium text-slate-900 disabled:opacity-50"
+            className="flex-1 rounded-2xl py-3 text-sm font-medium disabled:opacity-50"
+            style={{
+              backgroundColor: "var(--color-accent)",
+              color: "var(--color-on-night)",
+            }}
           >
             {isSubmitting ? "Speichere …" : "Profil fertigstellen"}
           </button>

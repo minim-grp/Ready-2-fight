@@ -47,18 +47,28 @@ gewinnt das PRD; abweichende Layout-Entscheidungen werden im PR-Body notiert.
 
 **Done.** Build + Lint + 167 Unit-Tests gruen.
 
-### 5c.2 — Onboarding Hi-fi
+### 5c.2 — Onboarding Hi-fi ✅ erledigt
+
+**2026-04-28.** SplashStep mit dunkler Hero-Card + Wordmark Fraunces, ConsentStep
+mit 3 Toggles (`ai_consent` persistiert via `useSetAiConsent`, Coach-Sichtbarkeit
+und Marketing als UI-Skelett bis Migration), AthleteOnboarding und
+CoachOnboarding auf Calm-Strength-Tokens, neuer CrsTutorialStep nach
+Profil-Submit. OnboardingPage Phasen: splash → consent → athlete/coach →
+tutorial → done. 8 neue Tests.
 
 - Splash mit Foto-Hero (Kaempfer-Portrait, SW-Sepia gefiltert) + Brand-Wordmark
-  Fraunces.
+  Fraunces. Aktuell Platzhalter via radialem CSS-Verlauf, Asset-Lieferung als
+  Followup.
 - Consent-Gate: getrennte Toggles (Coach-Sichtbarkeit, KI-Verarbeitung,
   Werbung) — DSGVO bleibt dieselbe Logik wie heute, nur neue Hierarchie.
+  Persistiert aktuell nur `ai_consent`; `coach_visibility` und `marketing`
+  brauchen eigene Migrations-PRs.
 - Rollenwahl, Profil, Disziplinen, CRS-Tutorial — Calm/Medito-Whitespace,
   Mono-Metadata-Caps, Crimson nur fuer primaeren CTA.
 - BirthDateField bleibt 3-Feld TT/MM/JJJJ.
 
-**Tests.** Bestehende Onboarding-Tests anpassen (Selektoren auf Roles/Labels,
-nicht Klassen).
+**Tests.** 8 neue (OnboardingPage flow, ConsentStep ai_consent persist).
+Bestehende Onboarding-Tests gab es nicht — Komponenten waren bisher untested.
 
 ### 5c.3 — Dashboard + TrackingPage Hi-fi
 
