@@ -8,6 +8,7 @@ import {
 import { useOnlineStatus } from "../../hooks/useOnlineStatus";
 import { logger } from "../../lib/logger";
 import { Segmented } from "./Segmented";
+import { MoodEmojiStrip } from "./MoodEmojiStrip";
 import {
   ACTIVITY_OPTIONS,
   QUALITY_OPTIONS,
@@ -17,15 +18,31 @@ import {
   type TrackingFormState,
 } from "./trackingForm.logic";
 
+const FORM_CARD_STYLE: React.CSSProperties = {
+  backgroundColor: "var(--color-paper)",
+  border: "1px solid var(--line)",
+  boxShadow: "var(--shadow-1)",
+};
+
+const INPUT_STYLE: React.CSSProperties = {
+  backgroundColor: "var(--color-paper-elev)",
+  border: "1px solid var(--line)",
+  color: "var(--color-ink)",
+};
+
 export function TrackingForm() {
   const q = useTodayTracking();
   const isOnline = useOnlineStatus();
 
   if (q.isLoading)
-    return <p className="text-sm text-slate-500">Lade heutigen Eintrag …</p>;
+    return (
+      <p className="text-sm" style={{ color: "var(--color-ink-3)" }}>
+        Lade heutigen Eintrag …
+      </p>
+    );
   if (q.error && isOnline)
     return (
-      <p className="text-sm text-red-400">
+      <p className="text-sm" style={{ color: "var(--color-accent-2)" }}>
         Heutiger Eintrag konnte nicht geladen werden.
       </p>
     );
@@ -73,7 +90,8 @@ function TrackingFormInner({ initial }: InnerProps) {
         e.preventDefault();
         void handleSubmit();
       }}
-      className="space-y-5"
+      className="space-y-5 rounded-[22px] p-5"
+      style={FORM_CARD_STYLE}
       noValidate
     >
       <Segmented
@@ -96,10 +114,8 @@ function TrackingFormInner({ initial }: InnerProps) {
         required
       />
 
-      <Segmented
+      <MoodEmojiStrip
         label="Stimmung"
-        name="mood"
-        options={QUALITY_OPTIONS}
         value={form.mood}
         onChange={(v) => update("mood", v)}
         required
@@ -125,11 +141,14 @@ function TrackingFormInner({ initial }: InnerProps) {
         required
       />
 
-      <details className="rounded-md border border-slate-800">
-        <summary className="cursor-pointer px-3 py-2 text-sm font-medium">
+      <details className="rounded-2xl" style={{ border: "1px solid var(--line)" }}>
+        <summary
+          className="cursor-pointer px-3 py-2 text-sm font-medium"
+          style={{ color: "var(--color-ink-2)" }}
+        >
           Weitere Angaben (optional)
         </summary>
-        <div className="space-y-5 border-t border-slate-800 p-3">
+        <div className="space-y-5 p-3" style={{ borderTop: "1px solid var(--line)" }}>
           <NumberField
             id="calories_kcal"
             label="Kalorien (kcal)"
@@ -185,7 +204,11 @@ function TrackingFormInner({ initial }: InnerProps) {
 
           {form.soreness && (
             <div>
-              <label htmlFor="soreness_region" className="mb-1 block text-sm font-medium">
+              <label
+                htmlFor="soreness_region"
+                className="mb-1 block text-sm font-medium"
+                style={{ color: "var(--color-ink)" }}
+              >
                 Koerperregion
               </label>
               <input
@@ -195,7 +218,8 @@ function TrackingFormInner({ initial }: InnerProps) {
                 maxLength={100}
                 onChange={(e) => update("soreness_region", e.target.value)}
                 placeholder="z.B. Schultern, Beine"
-                className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                className="w-full rounded-md px-3 py-2 text-sm outline-none"
+                style={INPUT_STYLE}
               />
             </div>
           )}
@@ -203,7 +227,7 @@ function TrackingFormInner({ initial }: InnerProps) {
       </details>
 
       {error && (
-        <p className="text-sm text-red-400" role="alert">
+        <p className="text-sm" role="alert" style={{ color: "var(--color-accent-2)" }}>
           {error}
         </p>
       )}
@@ -211,7 +235,11 @@ function TrackingFormInner({ initial }: InnerProps) {
       <button
         type="submit"
         disabled={upsert.isPending}
-        className="w-full rounded-md bg-white py-2.5 text-sm font-medium text-slate-900 disabled:opacity-50"
+        className="w-full rounded-2xl py-3 text-sm font-medium disabled:opacity-50"
+        style={{
+          backgroundColor: "var(--color-accent)",
+          color: "var(--color-on-night)",
+        }}
       >
         {upsert.isPending ? "Speichere …" : isDirty ? "Heute speichern" : "Aktualisieren"}
       </button>
@@ -242,9 +270,17 @@ function NumberField({
 }: NumberFieldProps) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1 block text-sm font-medium">
+      <label
+        htmlFor={id}
+        className="mb-1 block text-sm font-medium"
+        style={{ color: "var(--color-ink)" }}
+      >
         {label}
-        {required && <span className="ml-1 text-red-400">*</span>}
+        {required && (
+          <span className="ml-1" style={{ color: "var(--color-accent)" }}>
+            *
+          </span>
+        )}
       </label>
       <input
         id={id}
@@ -255,7 +291,8 @@ function NumberField({
         step={step}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-slate-500"
+        className="w-full rounded-md px-3 py-2 text-sm outline-none"
+        style={INPUT_STYLE}
       />
     </div>
   );
@@ -270,9 +307,15 @@ function Toggle({ label, checked, onChange }: ToggleProps) {
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="h-4 w-4 rounded border-slate-600 bg-slate-800"
+        className="h-4 w-4 rounded"
+        style={{
+          accentColor: "var(--color-accent)",
+          border: "1px solid var(--line)",
+        }}
       />
-      <span className="text-sm font-medium">{label}</span>
+      <span className="text-sm font-medium" style={{ color: "var(--color-ink)" }}>
+        {label}
+      </span>
     </label>
   );
 }

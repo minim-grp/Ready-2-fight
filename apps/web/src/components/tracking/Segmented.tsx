@@ -19,9 +19,13 @@ export function Segmented<T extends string>({
 }: Props<T>) {
   return (
     <fieldset>
-      <legend className="mb-1 text-sm font-medium">
+      <legend className="mb-2 text-sm font-medium" style={{ color: "var(--color-ink)" }}>
         {label}
-        {required && <span className="ml-1 text-red-400">*</span>}
+        {required && (
+          <span className="ml-1" style={{ color: "var(--color-accent)" }}>
+            *
+          </span>
+        )}
       </legend>
       <div
         role="radiogroup"
@@ -38,11 +42,17 @@ export function Segmented<T extends string>({
               aria-checked={active}
               onClick={() => onChange(opt.value)}
               name={name}
-              className={`rounded-md border px-3 py-2 text-sm transition ${
-                active
-                  ? "border-slate-400 bg-slate-800"
-                  : "border-slate-700 bg-slate-900 hover:border-slate-600"
-              }`}
+              className="rounded-2xl px-3 py-2 text-sm transition"
+              style={{
+                backgroundColor: active
+                  ? "var(--color-accent-soft)"
+                  : "var(--color-paper)",
+                border: active
+                  ? "1px solid var(--color-accent)"
+                  : "1px solid var(--line)",
+                color: "var(--color-ink)",
+                fontWeight: active ? 600 : 400,
+              }}
             >
               {opt.label}
             </button>

@@ -4,15 +4,29 @@ import type { HistoryWindow } from "../../lib/trackingHistory";
 
 const WINDOWS: ReadonlyArray<HistoryWindow> = [7, 30];
 
+const CARD_STYLE: React.CSSProperties = {
+  backgroundColor: "var(--color-paper)",
+  border: "1px solid var(--line)",
+  boxShadow: "var(--shadow-1)",
+};
+
 export function WeightHistoryChart() {
   const [windowDays, setWindowDays] = useState<HistoryWindow>(30);
   const today = useMemo(() => new Date(), []);
   const q = useWeightHistory(windowDays, today);
 
   return (
-    <div className="rounded-md border border-slate-800 p-4">
+    <div className="rounded-[22px] p-5" style={CARD_STYLE}>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-medium text-slate-300">Gewichtsverlauf</h2>
+        <h2
+          className="text-xs tracking-[0.18em] uppercase"
+          style={{
+            fontFamily: "var(--font-mono)",
+            color: "var(--color-ink-3)",
+          }}
+        >
+          Gewichtsverlauf
+        </h2>
         <div role="group" aria-label="Zeitraum waehlen" className="inline-flex gap-1">
           {WINDOWS.map((w) => {
             const active = w === windowDays;
@@ -22,12 +36,12 @@ export function WeightHistoryChart() {
                 type="button"
                 onClick={() => setWindowDays(w)}
                 aria-pressed={active}
-                className={
-                  "rounded-md px-2.5 py-1 text-xs " +
-                  (active
-                    ? "bg-slate-100 text-slate-900"
-                    : "border border-slate-800 text-slate-300 hover:border-slate-600")
-                }
+                className="rounded-md px-2.5 py-1 text-xs"
+                style={{
+                  backgroundColor: active ? "var(--color-accent)" : "transparent",
+                  color: active ? "var(--color-on-night)" : "var(--color-ink-2)",
+                  border: active ? "none" : "1px solid var(--line-2)",
+                }}
               >
                 {w} Tage
               </button>
@@ -37,13 +51,13 @@ export function WeightHistoryChart() {
       </div>
 
       {q.isLoading && (
-        <p role="status" className="text-sm text-slate-500">
+        <p role="status" className="text-sm" style={{ color: "var(--color-ink-3)" }}>
           Lade Gewichtsverlauf …
         </p>
       )}
 
       {q.error && (
-        <p role="alert" className="text-sm text-red-400">
+        <p role="alert" className="text-sm" style={{ color: "var(--color-accent-2)" }}>
           Gewichtsverlauf konnte nicht geladen werden.
         </p>
       )}
@@ -56,7 +70,7 @@ export function WeightHistoryChart() {
 function WeightLine({ points }: { points: WeightPoint[] }) {
   if (points.length === 0) {
     return (
-      <p className="text-sm text-slate-500">
+      <p className="text-sm" style={{ color: "var(--color-ink-3)" }}>
         Noch keine Gewichtsdaten. Trage dein Gewicht im Tages-Tracking ein.
       </p>
     );
@@ -99,20 +113,14 @@ function WeightLine({ points }: { points: WeightPoint[] }) {
         aria-label={`${points.length} Messungen, zuletzt ${latest.weight_kg.toFixed(1)} kg`}
         preserveAspectRatio="none"
       >
-        <path
-          d={path}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          className="text-orange-400"
-        />
+        <path d={path} fill="none" stroke="var(--color-accent)" strokeWidth={2} />
         {points.map((p, i) => (
           <circle
             key={p.date}
             cx={xFor(i)}
             cy={yFor(p.weight_kg)}
             r={2.5}
-            className="fill-orange-300"
+            fill="var(--color-accent-2)"
           >
             <title>
               {p.date} — {p.weight_kg.toFixed(1)} kg
@@ -120,15 +128,24 @@ function WeightLine({ points }: { points: WeightPoint[] }) {
           </circle>
         ))}
       </svg>
-      <div className="mt-3 flex items-baseline justify-between text-xs text-slate-500">
+      <div
+        className="mt-3 flex items-baseline justify-between text-xs tracking-[0.12em] uppercase"
+        style={{
+          fontFamily: "var(--font-mono)",
+          color: "var(--color-ink-4)",
+        }}
+      >
         <span>
-          Aktuell:{" "}
-          <span className="text-slate-200 tabular-nums">
+          Aktuell ·{" "}
+          <span className="tabular-nums" style={{ color: "var(--color-ink-2)" }}>
             {latest.weight_kg.toFixed(1)} kg
           </span>
         </span>
         <span>
-          Veraenderung: <span className="text-slate-200 tabular-nums">{deltaLabel}</span>
+          Δ ·{" "}
+          <span className="tabular-nums" style={{ color: "var(--color-ink-2)" }}>
+            {deltaLabel}
+          </span>
         </span>
       </div>
     </div>
