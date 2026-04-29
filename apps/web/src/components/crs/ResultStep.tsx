@@ -40,6 +40,8 @@ export function ResultStep({ raws, onBack }: Props) {
         loading={q.isLoading}
       />
 
+      <ArchetypeCard archetype={q.data?.archetype ?? null} loading={q.isLoading} />
+
       <section className="rounded-[28px] p-6" style={CARD_STYLE}>
         <p
           className="mb-4 text-xs tracking-[0.18em] uppercase"
@@ -141,6 +143,90 @@ function ScoreHero({
         </p>
       )}
     </div>
+  );
+}
+
+// ASSUMPTION: Archetyp-Kurztexte sind UI-Default, nicht aus PRD.
+// Top-2-Logik kommt aus supabase/functions/_shared/crsScore.ts archetypeFor().
+const ARCHETYPE_COPY: Record<
+  "Tank" | "Assassin" | "Guardian" | "Berserker" | "Rookie",
+  { tagline: string; description: string }
+> = {
+  Tank: {
+    tagline: "Halten + Pressen",
+    description: "Plank und Squats sind deine staerksten Disziplinen.",
+  },
+  Assassin: {
+    tagline: "Tempo + Explosivitaet",
+    description: "High Knees und Burpees fliegen dir leicht von der Hand.",
+  },
+  Guardian: {
+    tagline: "Stabilitaet + Oberkoerper",
+    description: "Plank und Push-ups halten dich solide im Stand.",
+  },
+  Berserker: {
+    tagline: "Druck + Dynamik",
+    description: "Burpees und Squats setzen den Ton in deinem Profil.",
+  },
+  Rookie: {
+    tagline: "Ausgewogen",
+    description: "Kein Top-Paar dominiert — Allrounder-Profil mit Luft nach oben.",
+  },
+};
+
+function ArchetypeCard({
+  archetype,
+  loading,
+}: {
+  archetype: string | null;
+  loading: boolean;
+}) {
+  const key = archetype as keyof typeof ARCHETYPE_COPY | null;
+  const copy = key && key in ARCHETYPE_COPY ? ARCHETYPE_COPY[key] : null;
+
+  return (
+    <section className="rounded-[28px] p-6" style={CARD_STYLE}>
+      <p
+        className="mb-3 text-xs tracking-[0.18em] uppercase"
+        style={{ fontFamily: "var(--font-mono)", color: "var(--color-ink-3)" }}
+      >
+        Archetyp
+      </p>
+      {loading && (
+        <p className="text-sm" style={{ color: "var(--color-ink-2)" }}>
+          Lade Archetyp …
+        </p>
+      )}
+      {!loading && !copy && (
+        <p className="text-sm" style={{ color: "var(--color-ink-2)" }}>
+          Archetyp wird berechnet, sobald die Auswertung verfuegbar ist.
+        </p>
+      )}
+      {!loading && copy && key && (
+        <div>
+          <p
+            className="leading-none"
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "2.25rem",
+              letterSpacing: "-0.02em",
+              color: "var(--color-ink)",
+            }}
+          >
+            {key}
+          </p>
+          <p
+            className="mt-2 text-xs tracking-[0.18em] uppercase"
+            style={{ fontFamily: "var(--font-mono)", color: "var(--color-ink-3)" }}
+          >
+            {copy.tagline}
+          </p>
+          <p className="mt-3 text-sm" style={{ color: "var(--color-ink-2)" }}>
+            {copy.description}
+          </p>
+        </div>
+      )}
+    </section>
   );
 }
 

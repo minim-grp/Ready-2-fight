@@ -6,6 +6,7 @@ export type LatestCrsScore = {
   test_id: string;
   score: number | null;
   rank: string | null;
+  archetype: string | null;
   completed_at: string;
 };
 
@@ -18,7 +19,7 @@ export function useLatestCrsScore() {
     queryFn: async (): Promise<LatestCrsScore | null> => {
       const { data, error } = await supabase
         .from("crs_tests")
-        .select("id, score, rank_label, completed_at")
+        .select("id, score, rank_label, archetype, completed_at")
         .eq("athlete_id", userId!)
         .eq("status", "completed")
         .order("completed_at", { ascending: false })
@@ -31,6 +32,7 @@ export function useLatestCrsScore() {
         test_id: data.id,
         score: data.score,
         rank: data.rank_label,
+        archetype: data.archetype,
         completed_at: data.completed_at,
       };
     },

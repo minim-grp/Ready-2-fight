@@ -340,5 +340,44 @@ describe("CrsTestPage hi-fi (5c.4)", () => {
     expect(screen.getByText(/Warum diese Zahl\?/)).toBeInTheDocument();
     expect(screen.getByText(/Beste Disziplin/)).toBeInTheDocument();
     expect(screen.getByText(/Verbesserungs-Potenzial/)).toBeInTheDocument();
+    expect(screen.getByText(/Archetyp wird berechnet/)).toBeInTheDocument();
+  });
+
+  it("Result-Screen rendert Archetyp-Card mit Name + Beschreibung wenn data vorhanden", async () => {
+    latestScoreState.value = {
+      data: {
+        test_id: "t-1",
+        score: 72,
+        rank: "B",
+        archetype: "Berserker",
+        completed_at: "2026-04-30T10:00:00Z",
+      },
+      isLoading: false,
+      error: null,
+    };
+    renderPage();
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: /Test starten/ }));
+    await waitFor(() => expect(screen.getByText(/Warm-up 1 \/ 3/)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /Ueberspringen/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Ueberspringen/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Ueberspringen/ }));
+
+    const values = [12, 30, 25, 45, 60];
+    for (let i = 0; i < 5; i += 1) {
+      fireEvent.click(screen.getByRole("button", { name: /Fertig, Wert eingeben/ }));
+      const input = await screen.findByRole("spinbutton");
+      fireEvent.change(input, { target: { value: String(values[i]) } });
+      fireEvent.click(screen.getByRole("button", { name: /Weiter/ }));
+      await waitFor(() =>
+        expect(saveState.value.mutateAsync).toHaveBeenCalledTimes(i + 1),
+      );
+    }
+    fireEvent.click(screen.getByRole("button", { name: /Test abschliessen/ }));
+    await waitFor(() => expect(completeState.value.mutateAsync).toHaveBeenCalledTimes(1));
+
+    expect(screen.getByText("Berserker")).toBeInTheDocument();
+    expect(screen.getByText(/Druck \+ Dynamik/i)).toBeInTheDocument();
+    expect(screen.getByText(/Burpees und Squats setzen den Ton/i)).toBeInTheDocument();
   });
 });
