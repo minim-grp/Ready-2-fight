@@ -160,7 +160,7 @@ SELECT public.save_crs_exercise((SELECT id FROM _crs_test_a1), 'high_knees', 85)
 RESET ROLE;
 
 SELECT ok(
-  (SELECT burpees_30s = 20
+  (SELECT burpees_60s = 20
       AND squats_60s = 45
       AND pushups_60s = 30
       AND plank_sec = 55
