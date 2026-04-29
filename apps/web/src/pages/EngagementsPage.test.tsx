@@ -54,6 +54,7 @@ function setProfile(role: Profile["role"], overrides: Partial<ProfileQueryState>
       role,
       level: 1,
       level_title: "Recruit",
+      ai_consent: false,
       xp_total: 0,
       onboarding_done: true,
     },

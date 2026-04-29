@@ -13,10 +13,38 @@ import {
   PERMISSION_KEYS,
   purposeLabel,
   statusLabel,
-  statusStyle,
   type PermissionKey,
 } from "../../lib/engagementLifecycle";
 import { ReauthModal } from "./ReauthModal";
+
+const CARD_STYLE: React.CSSProperties = {
+  backgroundColor: "var(--color-paper)",
+  border: "1px solid var(--line)",
+  boxShadow: "var(--shadow-1)",
+};
+
+const STATUS_PILL_STYLE: Record<EngagementRow["status"], React.CSSProperties> = {
+  pending: {
+    backgroundColor: "var(--color-bone)",
+    color: "var(--color-ink-3)",
+    border: "1px solid var(--line)",
+  },
+  active: {
+    backgroundColor: "var(--color-accent-soft)",
+    color: "var(--color-accent-2)",
+    border: "1px solid var(--color-accent-soft)",
+  },
+  paused: {
+    backgroundColor: "var(--color-bone)",
+    color: "var(--color-ink-2)",
+    border: "1px solid var(--line)",
+  },
+  ended: {
+    backgroundColor: "transparent",
+    color: "var(--color-ink-3)",
+    border: "1px solid var(--line-2)",
+  },
+};
 
 export function EngagementsList() {
   const userId = useAuthStore((s) => s.user?.id);
@@ -30,7 +58,7 @@ export function EngagementsList() {
 
   if (query.isLoading) {
     return (
-      <p role="status" className="text-sm text-slate-500">
+      <p role="status" className="text-sm" style={{ color: "var(--color-ink-3)" }}>
         Lade Engagements …
       </p>
     );
@@ -38,7 +66,7 @@ export function EngagementsList() {
 
   if (query.error) {
     return (
-      <p role="alert" className="text-sm text-red-400">
+      <p role="alert" className="text-sm" style={{ color: "var(--color-accent-2)" }}>
         Engagements konnten nicht geladen werden.
       </p>
     );
@@ -47,7 +75,7 @@ export function EngagementsList() {
   const rows = query.data ?? [];
   if (rows.length === 0) {
     return (
-      <p className="text-sm text-slate-500">
+      <p className="text-sm" style={{ color: "var(--color-ink-3)" }}>
         Noch keine Engagements. Loese oben einen Code ein, um einen Coach zu verbinden.
       </p>
     );
@@ -93,7 +121,7 @@ export function EngagementsList() {
 
   return (
     <div className="space-y-3">
-      <ul className="space-y-2">
+      <ul className="space-y-3">
         {rows.map((row) => (
           <EngagementRowView
             key={row.id}
@@ -114,7 +142,7 @@ export function EngagementsList() {
         ))}
       </ul>
       {actionError && (
-        <p role="alert" className="text-sm text-red-400">
+        <p role="alert" className="text-sm" style={{ color: "var(--color-accent-2)" }}>
           {actionError}
         </p>
       )}
@@ -159,16 +187,35 @@ function EngagementRowView({
   const permissionsTitle = isCoach ? "Deine Rechte" : "Coach sieht";
 
   return (
-    <li className="rounded-md border border-slate-800 bg-slate-900/50 p-3">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate text-sm text-slate-100">
-            {counterpartyRole}: <span className="font-medium">{counterpartyName}</span>
-          </p>
-          <p className="truncate text-xs text-slate-400">{purposeLabel(row.purpose)}</p>
+    <li className="rounded-[22px] p-4" style={CARD_STYLE}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar name={counterpartyName} />
+          <div className="min-w-0">
+            <p
+              className="text-xs tracking-[0.12em] uppercase"
+              style={{ fontFamily: "var(--font-mono)", color: "var(--color-ink-3)" }}
+            >
+              {counterpartyRole}
+            </p>
+            <p
+              className="truncate"
+              style={{
+                fontFamily: "var(--font-display)",
+                fontSize: "1.125rem",
+                color: "var(--color-ink)",
+              }}
+            >
+              {counterpartyName}
+            </p>
+            <p className="truncate text-xs" style={{ color: "var(--color-ink-3)" }}>
+              {purposeLabel(row.purpose)}
+            </p>
+          </div>
         </div>
         <span
-          className={`rounded-full border px-2 py-0.5 text-xs ${statusStyle(row.status)}`}
+          className="rounded-full px-3 py-1 text-[10px] tracking-[0.18em] uppercase"
+          style={{ ...STATUS_PILL_STYLE[row.status], fontFamily: "var(--font-mono)" }}
           aria-label={`Status: ${statusLabel(row.status)}`}
         >
           {statusLabel(row.status)}
@@ -176,7 +223,9 @@ function EngagementRowView({
       </div>
 
       {row.status === "ended" && endedReason && (
-        <p className="mt-1 text-xs text-slate-500">{endedReason}</p>
+        <p className="mt-3 text-xs" style={{ color: "var(--color-ink-3)" }}>
+          {endedReason}
+        </p>
       )}
 
       {row.status !== "ended" && (
@@ -188,38 +237,86 @@ function EngagementRowView({
       )}
 
       {row.status !== "ended" && (
-        <div className="mt-2 flex flex-wrap items-center gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           {row.status === "active" && (
-            <button
-              type="button"
+            <ActionButton
+              label={isPending ? "Pausiere …" : "Pausieren"}
               onClick={onPause}
               disabled={isPending}
-              className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-200 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isPending ? "Pausiere …" : "Pausieren"}
-            </button>
+            />
           )}
           {row.status === "paused" && (
-            <button
-              type="button"
+            <ActionButton
+              label={isPending ? "Setze fort …" : "Fortsetzen"}
               onClick={onResume}
               disabled={isPending}
-              className="rounded-md border border-slate-700 px-2 py-1 text-xs text-slate-200 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isPending ? "Setze fort …" : "Fortsetzen"}
-            </button>
+            />
           )}
           <button
             type="button"
             onClick={onAskEnd}
             disabled={isPending}
-            className="rounded-md border border-red-800 px-2 py-1 text-xs text-red-200 hover:border-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-2xl px-3 py-1.5 text-xs disabled:opacity-40"
+            style={{
+              border: "1px solid var(--color-accent-2)",
+              color: "var(--color-accent-2)",
+              backgroundColor: "transparent",
+            }}
           >
             Beenden
           </button>
         </div>
       )}
     </li>
+  );
+}
+
+function ActionButton({
+  label,
+  onClick,
+  disabled,
+}: {
+  label: string;
+  onClick: () => void;
+  disabled: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="rounded-2xl px-3 py-1.5 text-xs disabled:opacity-40"
+      style={{
+        border: "1px solid var(--line-2)",
+        color: "var(--color-ink-2)",
+        backgroundColor: "transparent",
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
+function Avatar({ name }: { name: string }) {
+  const initials = name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0]?.toUpperCase() ?? "")
+    .join("");
+  return (
+    <div
+      aria-hidden
+      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm"
+      style={{
+        backgroundColor: "var(--color-bone)",
+        color: "var(--color-ink-2)",
+        fontFamily: "var(--font-display)",
+        letterSpacing: "0.02em",
+      }}
+    >
+      {initials || "?"}
+    </div>
   );
 }
 
@@ -232,20 +329,34 @@ type PermissionChipsProps = {
 function PermissionChips({ title, granted, engagementId }: PermissionChipsProps) {
   const labelId = `perm-${engagementId}`;
   return (
-    <div className="mt-2">
-      <p id={labelId} className="text-xs text-slate-500">
+    <div className="mt-3">
+      <p
+        id={labelId}
+        className="text-xs tracking-[0.12em] uppercase"
+        style={{ fontFamily: "var(--font-mono)", color: "var(--color-ink-3)" }}
+      >
         {title}:
       </p>
       {granted.length === 0 ? (
-        <p className="mt-0.5 text-xs text-slate-600" aria-labelledby={labelId}>
+        <p
+          className="mt-1 text-xs"
+          style={{ color: "var(--color-ink-3)" }}
+          aria-labelledby={labelId}
+        >
           keine Berechtigungen
         </p>
       ) : (
-        <ul aria-labelledby={labelId} className="mt-1 flex flex-wrap gap-1">
+        <ul aria-labelledby={labelId} className="mt-2 flex flex-wrap gap-1.5">
           {granted.map((key) => (
             <li
               key={key}
-              className="rounded-full border border-slate-700 bg-slate-800/60 px-2 py-0.5 text-[10px] text-slate-300"
+              className="rounded-full px-2.5 py-0.5 text-[10px] tracking-[0.12em] uppercase"
+              style={{
+                fontFamily: "var(--font-mono)",
+                backgroundColor: "var(--color-bone)",
+                color: "var(--color-ink-2)",
+                border: "1px solid var(--line)",
+              }}
             >
               {permissionLabel(key)}
             </li>

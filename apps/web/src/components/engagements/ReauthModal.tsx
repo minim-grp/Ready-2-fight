@@ -60,24 +60,49 @@ export function ReauthModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="reauth-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4"
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      style={{ backgroundColor: "rgba(21, 20, 15, 0.55)" }}
     >
-      <div className="w-full max-w-sm rounded-lg border border-slate-800 bg-slate-900 p-5 shadow-xl">
-        <h2 id="reauth-title" className="text-lg font-semibold text-slate-100">
+      <div
+        className="w-full max-w-sm rounded-[28px] p-6"
+        style={{
+          backgroundColor: "var(--color-paper)",
+          border: "1px solid var(--line)",
+          boxShadow: "var(--shadow-3)",
+        }}
+      >
+        <p
+          className="mb-1 text-xs tracking-[0.18em] uppercase"
+          style={{ fontFamily: "var(--font-mono)", color: "var(--color-accent-2)" }}
+        >
+          Bestaetigung
+        </p>
+        <h2
+          id="reauth-title"
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "1.5rem",
+            letterSpacing: "-0.01em",
+            color: "var(--color-ink)",
+          }}
+        >
           {title}
         </h2>
-        <p className="mt-1 text-sm text-slate-400">{description}</p>
+        <p className="mt-2 text-sm" style={{ color: "var(--color-ink-2)" }}>
+          {description}
+        </p>
         <form
           onSubmit={(e) => {
             void submit(e);
           }}
           noValidate
-          className="mt-4 space-y-3"
+          className="mt-5 space-y-3"
         >
           <div>
             <label
               htmlFor="reauth-password"
-              className="mb-1 block text-sm font-medium text-slate-200"
+              className="mb-1 block text-sm font-medium"
+              style={{ color: "var(--color-ink)" }}
             >
               Passwort bestaetigen
             </label>
@@ -88,10 +113,19 @@ export function ReauthModal({
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm outline-none focus:border-slate-500"
+              className="w-full rounded-2xl px-4 py-3 text-sm outline-none"
+              style={{
+                backgroundColor: "var(--color-bg)",
+                border: "1px solid var(--line)",
+                color: "var(--color-ink)",
+              }}
             />
             {error && (
-              <p role="alert" className="mt-1 text-xs text-red-400">
+              <p
+                role="alert"
+                className="mt-2 text-xs"
+                style={{ color: "var(--color-accent-2)" }}
+              >
                 {error}
               </p>
             )}
@@ -101,14 +135,19 @@ export function ReauthModal({
               type="button"
               onClick={onCancel}
               disabled={isSubmitting}
-              className="rounded-md px-3 py-1.5 text-sm text-slate-300 hover:text-slate-100 disabled:opacity-60"
+              className="rounded-2xl px-4 py-2 text-sm disabled:opacity-40"
+              style={{ color: "var(--color-ink-2)", backgroundColor: "transparent" }}
             >
               Abbrechen
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-md border border-red-700 bg-red-950/40 px-3 py-1.5 text-sm text-red-100 hover:border-red-500 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-2xl px-4 py-2 text-sm disabled:opacity-40"
+              style={{
+                backgroundColor: "var(--color-accent)",
+                color: "var(--color-on-night)",
+              }}
             >
               {isSubmitting ? "Bestaetige …" : confirmLabel}
             </button>
