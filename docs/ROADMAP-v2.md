@@ -101,13 +101,36 @@ Anpassung — Selektoren waren rollen-basiert.
 - **Schlaf-Slider / RPE-Slider** statt Segmented (ROADMAP-v2 erwaehnt es,
   aber 3-stufiges Enum macht Slider sinnlos — koppeln an Mood-Enum-Erweiterung).
 
-### 5c.4 — CRS-Flow Hi-fi
+### 5c.4 — CRS-Flow Hi-fi ✅ erledigt (mit Followups)
 
-- Disclaimer-Gate: Stoppe-bei-Liste prominent, Akzeptieren-Toggle.
-- Live-Test: **eine Zahl, ein Timer** — Hi-fi reduziert die UI auf Hero-Numerale,
-  alles andere ist `--color-night`-Hintergrund.
-- Ergebnis: Radar-Chart + Score-Hero, Pace-Erklaerbarkeit ("Warum diese Zahl?"
-  bleibt textlich, kein KI-Call — `CLAUDE.md §0.3`).
+**2026-04-29.** `CrsTestPage` (449 LOC) refactort auf Sub-Komponenten unter
+`apps/web/src/components/crs/`: `DisclaimerStep`, `RecoveryPrompt`,
+`LiveTimerStep`, `ExerciseInputStep`, `ResultStep`, `RadarChart`. Alle Cards
+auf `--color-paper` mit Crimson-Akzent, Live-Test in `--color-night`-Card mit
+Hero-Numerale (Fraunces 8rem, mono caps Title). Disclaimer mit prominenter
+Stoppe-bei-Liste (5 Signale: Brustdruck, Schwindel, Atemnot, Gelenk-Schmerzen,
+Herzrasen) in `--color-bone`-Sub-Card. ResultStep mit Score-Hero (Score `--`
+bis §1.17), Radar-Chart (5 Achsen, Roh-Werte normalisiert auf maxValue) und
+Pace-Erklaerbarkeit ("Beste Disziplin / Verbesserungs-Potenzial" rein
+deterministisch, kein KI-Call). 191 Tests gruen (2 neue 5c.4-Tests).
+
+- **Disclaimer-Gate:** Stoppe-bei-Liste prominent in eigener Sub-Card, breiter
+  Akzeptieren-Toggle, Crimson-CTA full-width.
+- **Live-Test:** Hero-Numerale Fraunces 8rem, Title mono caps, Hint klein in
+  `--color-on-night-2`. Vollbild-Effekt durch dunkle Card mit min-h und
+  radialem Akzent-Gradient.
+- **Ergebnis:** Score-Hero (analog `CrsHeroCard` im Dashboard), Radar-Chart
+  als eigene SVG-Komponente, Pace-Erklaerung als deterministische
+  `Beste/Schwaechste`-Ableitung aus den Roh-Werten (kein KI, CLAUDE.md §0.3).
+
+**Followups (eigene PRs, nicht in 5c.4):**
+
+- `window.confirm` fuer Abbrechen → eigenes Re-Auth-Style-Modal in der
+  neuen Card-Sprache (UX-Polish, eigener PR).
+- ResultStep-Integration mit echter Score-Berechnung — koppelt an §1.17
+  (CRS-Score-Edge-Function) sobald `crs_norms` befuellt sind.
+- Radar-Achsen normalisieren aktuell auf `maxValue` (theoretische Obergrenze).
+  Sobald `crs_norms` da sind, auf prozentuale Norm-Skala umstellen.
 
 ### 5c.5 — SettingsPage + EngagementsPage Hi-fi
 
