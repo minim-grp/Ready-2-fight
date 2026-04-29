@@ -70,14 +70,36 @@ tutorial → done. 8 neue Tests.
 **Tests.** 8 neue (OnboardingPage flow, ConsentStep ai_consent persist).
 Bestehende Onboarding-Tests gab es nicht — Komponenten waren bisher untested.
 
-### 5c.3 — Dashboard + TrackingPage Hi-fi
+### 5c.3 — Dashboard + TrackingPage Hi-fi ✅ erledigt (mit Followups)
+
+**2026-04-29.** Dashboard mit personalisiertem Header (Tag · Datum mono caps,
+"Guten Morgen, Lena." Fraunces) und neuer CrsHeroCard (dunkle Hero-Card mit
+radialem Akzent, Score-Zahl in Fraunces, Rang aus `crs_tests.rank_label`,
+CTA "Test starten"). StreakCard, StreakHistoryChart, WeightHistoryChart und
+TrackingForm auf Calm-Strength-Tokens (`--color-paper`, Akzent-Crimson statt
+orange-400, Mono-Caps fuer Sektion-Header). Mood ist jetzt MoodEmojiStrip
+(😞 😐 😊, mapped auf das `sleep_quality`-Enum). TrackingPage bekommt
+BreathingCard (statisch, 4-7-8-Anleitung, kein Audio). Neuer Hook
+`useLatestCrsScore` mit Empty/Loading/Error-States. 189 Tests gruen ohne
+Anpassung — Selektoren waren rollen-basiert.
 
 - **Dashboard.** CRS-Hero (grosse Score-Zahl in Fraunces, Sparkline darunter),
-  Wochen-Stats-Grid (Schlaf · Puls · Gewicht · Streak), `WeightHistoryChart` und
-  `StreakHistoryChart` in der neuen Card-Sprache (`--color-paper`).
-- **TrackingPage.** Mood-Reihe als Emoji-Strip (🌑 → 🌕), Schlaf-Slider,
-  RPE-Slider, optionale Box-Breathing-Anleitung als statische Card (kein Audio
-  in MVP, nur visueller Anker fuer 5c-Future).
+  `WeightHistoryChart` und `StreakHistoryChart` in der neuen Card-Sprache
+  (`--color-paper`).
+- **TrackingPage.** Mood-Reihe als Emoji-Strip, optionale Box-Breathing-
+  Anleitung als statische Card (kein Audio in MVP).
+
+**Followups (eigene PRs, nicht in 5c.3):**
+
+- **Sparkline im CrsHero** — Hi-fi-Mock zeigt Score-Trend ueber 12 Tests.
+  Aktuell nur Score-Zahl. Braucht `useCrsScoreHistory` + Mini-Line-SVG.
+- **Wochen-Stats-Grid** (Schlaf · Puls · Gewicht · Streak). Schlaf + Streak +
+  Gewicht ableitbar aus daily_tracking; **Puls fehlt im Schema** (`resting_hr`
+  in `daily_tracking` nicht vorhanden) — eigener Migrations-PR noetig.
+- **Mood-Enum erweitern** auf 5 Stufen (🌑 🌒 🌓 🌔 🌕) statt 3, dafuer
+  Migration fuer `sleep_quality`-Enum + Backfill.
+- **Schlaf-Slider / RPE-Slider** statt Segmented (ROADMAP-v2 erwaehnt es,
+  aber 3-stufiges Enum macht Slider sinnlos — koppeln an Mood-Enum-Erweiterung).
 
 ### 5c.4 — CRS-Flow Hi-fi
 

@@ -4,15 +4,29 @@ import { buildHistoryGrid, type HistoryWindow } from "../../lib/trackingHistory"
 
 const WINDOWS: ReadonlyArray<HistoryWindow> = [7, 30];
 
+const CARD_STYLE: React.CSSProperties = {
+  backgroundColor: "var(--color-paper)",
+  border: "1px solid var(--line)",
+  boxShadow: "var(--shadow-1)",
+};
+
 export function StreakHistoryChart() {
   const [windowDays, setWindowDays] = useState<HistoryWindow>(7);
   const today = useMemo(() => new Date(), []);
   const q = useTrackingHistory(windowDays, today);
 
   return (
-    <div className="rounded-md border border-slate-800 p-4">
+    <div className="rounded-[22px] p-5" style={CARD_STYLE}>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-sm font-medium text-slate-300">Tracking-Historie</h2>
+        <h2
+          className="text-xs tracking-[0.18em] uppercase"
+          style={{
+            fontFamily: "var(--font-mono)",
+            color: "var(--color-ink-3)",
+          }}
+        >
+          Tracking-Historie
+        </h2>
         <div role="group" aria-label="Zeitraum waehlen" className="inline-flex gap-1">
           {WINDOWS.map((w) => {
             const active = w === windowDays;
@@ -22,12 +36,12 @@ export function StreakHistoryChart() {
                 type="button"
                 onClick={() => setWindowDays(w)}
                 aria-pressed={active}
-                className={
-                  "rounded-md px-2.5 py-1 text-xs " +
-                  (active
-                    ? "bg-slate-100 text-slate-900"
-                    : "border border-slate-800 text-slate-300 hover:border-slate-600")
-                }
+                className="rounded-md px-2.5 py-1 text-xs"
+                style={{
+                  backgroundColor: active ? "var(--color-accent)" : "transparent",
+                  color: active ? "var(--color-on-night)" : "var(--color-ink-2)",
+                  border: active ? "none" : "1px solid var(--line-2)",
+                }}
               >
                 {w} Tage
               </button>
@@ -37,13 +51,13 @@ export function StreakHistoryChart() {
       </div>
 
       {q.isLoading && (
-        <p role="status" className="text-sm text-slate-500">
+        <p role="status" className="text-sm" style={{ color: "var(--color-ink-3)" }}>
           Lade Historie …
         </p>
       )}
 
       {q.error && (
-        <p role="alert" className="text-sm text-red-400">
+        <p role="alert" className="text-sm" style={{ color: "var(--color-accent-2)" }}>
           Historie konnte nicht geladen werden.
         </p>
       )}
@@ -99,7 +113,7 @@ function HistoryGrid({ dates, windowDays, today }: GridProps) {
               height={cellSize}
               rx={2}
               ry={2}
-              className={day.tracked ? "fill-orange-400" : "fill-slate-800"}
+              fill={day.tracked ? "var(--color-accent)" : "var(--color-bg-3)"}
             >
               <title>
                 {day.date} — {day.tracked ? "getrackt" : "nicht getrackt"}
@@ -108,9 +122,17 @@ function HistoryGrid({ dates, windowDays, today }: GridProps) {
           );
         })}
       </svg>
-      <p className="mt-3 text-xs text-slate-500">
-        <span className="tabular-nums">{trackedCount}</span> von{" "}
-        <span className="tabular-nums">{windowDays}</span> Tagen getrackt
+      <p
+        className="mt-3 text-xs tracking-[0.12em] uppercase"
+        style={{
+          fontFamily: "var(--font-mono)",
+          color: "var(--color-ink-4)",
+        }}
+      >
+        <span className="tabular-nums" style={{ color: "var(--color-ink-2)" }}>
+          {trackedCount}
+        </span>{" "}
+        / {windowDays} Tage getrackt
       </p>
     </div>
   );

@@ -36,3 +36,10 @@ coverage/
 # Generated tool output
 graphify-out/
 **/graphify-out/
+
+# Tooling installiert ausserhalb des Repo-Scope (per-User, nicht versioniert):
+.agents/
+.claude/
+.claude-flow/
+.mcp.json
+skills-lock.json
