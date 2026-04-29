@@ -5,6 +5,12 @@ import { useRedeemEngagementCode } from "../hooks/queries/useRedeemEngagementCod
 import { mapRedeemError, normalizeCode, validateCodeInput } from "../lib/redeemCode";
 import { EngagementsList } from "../components/engagements/EngagementsList";
 
+const CARD_STYLE: React.CSSProperties = {
+  backgroundColor: "var(--color-paper)",
+  border: "1px solid var(--line)",
+  boxShadow: "var(--shadow-1)",
+};
+
 export function EngagementsPage() {
   const profile = useProfile();
   const mode = useModeStore((s) => s.mode);
@@ -13,7 +19,7 @@ export function EngagementsPage() {
 
   if (profile.isLoading) {
     return (
-      <p role="status" className="text-sm text-slate-500">
+      <p role="status" className="text-sm" style={{ color: "var(--color-ink-3)" }}>
         Lade Profil …
       </p>
     );
@@ -21,7 +27,7 @@ export function EngagementsPage() {
 
   if (profile.error) {
     return (
-      <p role="alert" className="text-sm text-red-400">
+      <p role="alert" className="text-sm" style={{ color: "var(--color-accent-2)" }}>
         Profil konnte nicht geladen werden.
       </p>
     );
@@ -32,17 +38,41 @@ export function EngagementsPage() {
   const subtitle = isCoachView
     ? "Uebersicht aller aktiven und vergangenen Betreuungen."
     : "Du hast einen Code von deinem Coach bekommen? Hier einloesen.";
+  const eyebrow = isCoachView ? "Engagements · Coach" : "Engagements · Athlet";
+  const listTitle = isCoachView ? "Deine Athleten" : "Deine Engagements";
 
   return (
     <section className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-semibold">{title}</h1>
-        <p className="text-sm text-slate-400">{subtitle}</p>
+      <header className="space-y-1">
+        <p
+          className="text-xs tracking-[0.18em] uppercase"
+          style={{ fontFamily: "var(--font-mono)", color: "var(--color-ink-3)" }}
+        >
+          {eyebrow}
+        </p>
+        <h1
+          style={{
+            fontFamily: "var(--font-display)",
+            fontSize: "2rem",
+            letterSpacing: "-0.02em",
+            color: "var(--color-ink)",
+          }}
+        >
+          {title}
+        </h1>
+        <p className="text-sm" style={{ color: "var(--color-ink-2)" }}>
+          {subtitle}
+        </p>
       </header>
+
       {showRedeem && <RedeemForm />}
-      <section className="space-y-2">
-        <h2 className="text-lg font-semibold">
-          {isCoachView ? "Deine Athleten" : "Deine Engagements"}
+
+      <section className="space-y-3">
+        <h2
+          className="text-xs tracking-[0.18em] uppercase"
+          style={{ fontFamily: "var(--font-mono)", color: "var(--color-ink-3)" }}
+        >
+          {listTitle}
         </h2>
         <EngagementsList />
       </section>
@@ -80,42 +110,70 @@ function RedeemForm() {
           void submit(e);
         }}
         noValidate
-        className="space-y-3"
+        className="rounded-[22px] p-5"
+        style={CARD_STYLE}
       >
-        <div>
-          <label htmlFor="redeem-code" className="mb-1 block text-sm font-medium">
-            Engagement-Code
-          </label>
-          <input
-            id="redeem-code"
-            type="text"
-            autoComplete="off"
-            autoCapitalize="characters"
-            spellCheck={false}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            placeholder="ABCD2345"
-            maxLength={20}
-            aria-invalid={touched && !!validationError}
-            aria-describedby={
-              touched && validationError ? "redeem-code-error" : "redeem-code-hint"
-            }
-            className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 font-mono text-sm tracking-widest uppercase outline-none focus:border-slate-500"
-          />
-          {!(touched && validationError) && (
-            <p id="redeem-code-hint" className="mt-1 text-xs text-slate-500">
-              8 Zeichen, Gross-/Kleinschreibung egal.
-            </p>
-          )}
-          {touched && validationError && (
-            <p id="redeem-code-error" role="alert" className="mt-1 text-xs text-red-400">
-              {validationError}
-            </p>
-          )}
-        </div>
+        <p
+          className="mb-3 text-xs tracking-[0.18em] uppercase"
+          style={{ fontFamily: "var(--font-mono)", color: "var(--color-ink-3)" }}
+        >
+          Code einloesen
+        </p>
+        <label
+          htmlFor="redeem-code"
+          className="mb-1 block text-sm font-medium"
+          style={{ color: "var(--color-ink)" }}
+        >
+          Engagement-Code
+        </label>
+        <input
+          id="redeem-code"
+          type="text"
+          autoComplete="off"
+          autoCapitalize="characters"
+          spellCheck={false}
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="ABCD2345"
+          maxLength={20}
+          aria-invalid={touched && !!validationError}
+          aria-describedby={
+            touched && validationError ? "redeem-code-error" : "redeem-code-hint"
+          }
+          className="w-full rounded-2xl px-4 py-3 text-lg tracking-[0.18em] uppercase outline-none"
+          style={{
+            backgroundColor: "var(--color-bg)",
+            border: "1px solid var(--line)",
+            color: "var(--color-ink)",
+            fontFamily: "var(--font-mono)",
+          }}
+        />
+        {!(touched && validationError) && (
+          <p
+            id="redeem-code-hint"
+            className="mt-2 text-xs"
+            style={{ color: "var(--color-ink-3)" }}
+          >
+            8 Zeichen, Gross-/Kleinschreibung egal.
+          </p>
+        )}
+        {touched && validationError && (
+          <p
+            id="redeem-code-error"
+            role="alert"
+            className="mt-2 text-xs"
+            style={{ color: "var(--color-accent-2)" }}
+          >
+            {validationError}
+          </p>
+        )}
 
         {mutation.error && (
-          <p role="alert" className="text-sm text-red-400">
+          <p
+            role="alert"
+            className="mt-3 text-sm"
+            style={{ color: "var(--color-accent-2)" }}
+          >
             {mapRedeemError(mutation.error)}
           </p>
         )}
@@ -123,7 +181,11 @@ function RedeemForm() {
         <button
           type="submit"
           disabled={mutation.isPending}
-          className="w-full rounded-md bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+          className="mt-4 w-full rounded-2xl px-5 py-3 text-sm font-medium disabled:opacity-40"
+          style={{
+            backgroundColor: "var(--color-accent)",
+            color: "var(--color-on-night)",
+          }}
         >
           {mutation.isPending ? "Loese ein …" : "Code einloesen"}
         </button>
@@ -133,7 +195,12 @@ function RedeemForm() {
         <div
           role="status"
           aria-label="Code eingeloest"
-          className="rounded-md border border-emerald-800 bg-emerald-950/30 p-4 text-sm text-emerald-200"
+          className="rounded-2xl p-4 text-sm"
+          style={{
+            backgroundColor: "var(--color-bone)",
+            border: "1px solid var(--line)",
+            color: "var(--color-ink)",
+          }}
         >
           Code eingeloest. Dein Coach kann dich jetzt sehen.
         </div>

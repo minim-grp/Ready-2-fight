@@ -12,6 +12,7 @@ export type Profile = {
   level: number;
   level_title: string;
   xp_total: number;
+  ai_consent: boolean;
   onboarding_done: boolean;
 };
 
@@ -24,7 +25,7 @@ export function useProfile() {
     queryFn: async (): Promise<Profile> => {
       const { data: user, error: userError } = await supabase
         .from("users")
-        .select("id, display_name, role, level, level_title, xp_total")
+        .select("id, display_name, role, level, level_title, xp_total, ai_consent")
         .eq("id", userId!)
         .single();
 

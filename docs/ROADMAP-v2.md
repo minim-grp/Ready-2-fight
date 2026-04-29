@@ -132,14 +132,27 @@ deterministisch, kein KI-Call). 191 Tests gruen (2 neue 5c.4-Tests).
 - Radar-Achsen normalisieren aktuell auf `maxValue` (theoretische Obergrenze).
   Sobald `crs_norms` da sind, auf prozentuale Norm-Skala umstellen.
 
-### 5c.5 — SettingsPage + EngagementsPage Hi-fi
+### 5c.5 — SettingsPage + EngagementsPage Hi-fi ✅ erledigt (mit Followups)
 
-- DSGVO-Toggles in der neuen Card-Sprache: Gesundheitsdaten, Coach-Zugriff,
-  Verein-Sharing, Werbung. Toggles-Default unveraendert.
-- Daten-Rechte (Export, Korrektur, Loeschung) als 3 Akzent-Buttons.
-- Re-Auth-Modal-Trigger und `ai_consent`-Toggle (Followup #7) hier integriert.
-- EngagementsPage: Coach-Avatare in `--color-bone`, Permission-Chips als `.chip`-
-  Klassen.
+**2026-04-29.** SettingsPage in 5 Sub-Komponenten zerlegt
+(`apps/web/src/components/settings/`): ProfileCard mit Mono-Caps-Labels,
+ModeSwitcherCard (Pills `--color-accent`/transparent), AiConsentCard
+(`useSetAiConsent`-Toggle), DataRightsCard (3 disabled-Buttons als Skelett
+fuer Export/Korrektur/Loeschung mit DSGVO-Art.-Hint), SessionCard. Header
+Hi-fi (eyebrow mono caps, h1 Fraunces). `useProfile` um `ai_consent` erweitert.
+EngagementsPage: RedeemForm in `--color-paper`-Card mit Mono-Code-Input,
+Header Hi-fi. EngagementsList: Cards mit Initialen-Avataren in `--color-bone`,
+Status-Pills in `--color-accent-soft`/`--color-bone`/transparent, Permission-
+Chips mono caps in `--color-bone` mit Border. ReauthModal auf
+`--color-paper` mit Crimson-CTA. 197 Tests gruen (6 neue SettingsPage-Tests).
+
+**Followups (eigene PRs, nicht in 5c.5):**
+
+- `coach_visibility`- und `marketing`-Toggles brauchen eigene Migration
+  (siehe ConsentStep aus Sprint 5c.2 — gleicher Stand).
+- Daten-Rechte-Buttons funktional verdrahten an GDPR-Export-Edge-Function
+  (CLAUDE.md §1, §8). Aktuell nur UI-Skelett.
+- Vereins-Sharing-Toggle gehoert zu AUD-11 (Q3+).
 
 ### 5c.6 — Coach-Dashboard + Plan-Builder Hi-fi (Desktop)
 
