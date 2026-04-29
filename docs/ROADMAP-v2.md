@@ -154,12 +154,32 @@ Chips mono caps in `--color-bone` mit Border. ReauthModal auf
   (CLAUDE.md §1, §8). Aktuell nur UI-Skelett.
 - Vereins-Sharing-Toggle gehoert zu AUD-11 (Q3+).
 
-### 5c.6 — Coach-Dashboard + Plan-Builder Hi-fi (Desktop)
+### 5c.6 — Coach-Dashboard Empty-State Hi-fi ✅ erledigt
 
-- Attention-first Uebersicht: 4 Athleten brauchen heute Aufmerksamkeit (Card-
-  Reihe) + Wochenkalender darunter.
-- Plan-Builder: 3-Spalten-Layout (Block-Bibliothek · Timeline · Detail-Editor)
-  mit Auto-Progression-Hinweisen. Daten-Modell unveraendert.
+**2026-04-29.** Scope-Korrektur gegenueber dem urspruenglich geplanten Sprint 5c.6
+("Plan-Builder + Attention-first Cards"): das war echter neuer Funktionsumfang
+(Plan-Builder existiert nicht im Codebase, Coach-Dashboard hatte nur einen
+einzeiligen Platzhalter). Sprint 5c-Methode verlangt aber Re-Skin EXISTIERENDER
+Screens ohne neuen Scope. Daher in 5c.6 nur der **Coach-Dashboard Empty-State**
+re-skinned: Hero-Card in `--color-night` mit Headline "Noch keine Athleten
+verbunden.", zwei `--color-paper`-CTA-Cards (Code generieren →
+`/app/codes`, Athleten verwalten → `/app/engagements`), Hinweistext "Plan-Builder
+folgt in Sprint 7." Ersetzt das einzeilige `Coach-Dashboard folgt in Sprint 7.`
+in `Dashboard.tsx`. 198 Tests gruen (1 neuer Component-Test).
+
+**Verschoben nach Sprint 7 (Coach-Tools, eigener Block):**
+
+- Attention-first Uebersicht: Card-Reihe "4 Athleten brauchen heute
+  Aufmerksamkeit" + Wochenkalender — braucht neue Hooks (Coach-Aggregation
+  ueber Engagement-Athleten, Tracking-Daten via `is_linked_coach_with_*`).
+- Plan-Builder: 3-Spalten-Layout (Block-Bibliothek · Timeline ·
+  Detail-Editor) mit Auto-Progression-Hinweisen. Braucht neue Tabellen
+  (`plan_blocks`, `plan_assignments`), neue RLS-Policies, neue Views.
+
+**Begruendung der Verschiebung:** Beide Punkte beruehren neue Datenfelder /
+neuen Funktionsumfang — verletzt Sprint-5c-Methode (Zeile 33-34: "ohne neuen
+Scope, ohne neue Datenfelder, ohne neue RLS-Regeln"). Sauberer als eigener
+Sprint-Block (Coach-Tools = Sprint 7).
 
 **Done-Kriterium 5c gesamt.** Alle MVP-Screens visuell auf Calm-Strength;
 Snapshot-Tests aktualisiert; Lighthouse Accessibility ≥ 90 weiterhin gruen;

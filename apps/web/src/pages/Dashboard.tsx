@@ -6,6 +6,7 @@ import { CrsHeroCard } from "../components/dashboard/CrsHeroCard";
 import { StreakCard } from "../components/dashboard/StreakCard";
 import { StreakHistoryChart } from "../components/dashboard/StreakHistoryChart";
 import { WeightHistoryChart } from "../components/dashboard/WeightHistoryChart";
+import { CoachEmptyState } from "../components/dashboard/CoachEmptyState";
 
 const DAY_NAMES = [
   "Sonntag",
@@ -76,11 +77,7 @@ export function DashboardPage() {
         </>
       )}
 
-      {!showAthlete && profile.data && (
-        <p className="text-sm" style={{ color: "var(--color-ink-3)" }}>
-          Coach-Dashboard folgt in Sprint 7.
-        </p>
-      )}
+      {!showAthlete && profile.data && <CoachEmptyState />}
     </section>
   );
 }
