@@ -20,11 +20,15 @@ const completeState: { value: Mutation<string, string> } = {
 const abortState: { value: Mutation<string, void> } = {
   value: { mutateAsync: vi.fn<(a: string) => Promise<void>>(), isPending: false },
 };
+const computeState: { value: Mutation<string, unknown> } = {
+  value: { mutateAsync: vi.fn<(a: string) => Promise<unknown>>(), isPending: false },
+};
 
 vi.mock("../hooks/queries/useCrsTest", () => ({
   useStartCrsTest: () => startState.value,
   useSaveCrsExercise: () => saveState.value,
   useCompleteCrsTest: () => completeState.value,
+  useComputeCrsScore: () => computeState.value,
   useAbortCrsTest: () => abortState.value,
 }));
 
@@ -65,6 +69,14 @@ describe("CrsTestPage state machine", () => {
     };
     abortState.value = {
       mutateAsync: vi.fn<(a: string) => Promise<void>>().mockResolvedValue(undefined),
+      isPending: false,
+    };
+    computeState.value = {
+      mutateAsync: vi.fn<(a: string) => Promise<unknown>>().mockResolvedValue({
+        score: 50,
+        rank_label: "C",
+        archetype: "Rookie",
+      }),
       isPending: false,
     };
   });
@@ -141,6 +153,14 @@ describe("CrsTestPage interruption recovery (1.16)", () => {
     };
     abortState.value = {
       mutateAsync: vi.fn<(a: string) => Promise<void>>().mockResolvedValue(undefined),
+      isPending: false,
+    };
+    computeState.value = {
+      mutateAsync: vi.fn<(a: string) => Promise<unknown>>().mockResolvedValue({
+        score: 50,
+        rank_label: "C",
+        archetype: "Rookie",
+      }),
       isPending: false,
     };
   });
