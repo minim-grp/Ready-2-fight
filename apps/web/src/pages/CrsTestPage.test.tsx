@@ -28,6 +28,16 @@ vi.mock("../hooks/queries/useCrsTest", () => ({
   useAbortCrsTest: () => abortState.value,
 }));
 
+const latestScoreState: {
+  value: { data: unknown; isLoading: boolean; error: unknown };
+} = {
+  value: { data: null, isLoading: false, error: null },
+};
+
+vi.mock("../hooks/queries/useLatestCrsScore", () => ({
+  useLatestCrsScore: () => latestScoreState.value,
+}));
+
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
 function renderPage() {
@@ -249,5 +259,66 @@ describe("CrsTestPage interruption recovery (1.16)", () => {
       expect(window.localStorage.getItem("r2f.crs.recovery")).toBeNull(),
     );
     confirmSpy.mockRestore();
+  });
+});
+
+describe("CrsTestPage hi-fi (5c.4)", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    startState.value = {
+      mutateAsync: vi.fn<(a: unknown) => Promise<string>>().mockResolvedValue("test-id"),
+      isPending: false,
+    };
+    saveState.value = {
+      mutateAsync: vi.fn<(a: unknown) => Promise<void>>().mockResolvedValue(undefined),
+      isPending: false,
+    };
+    completeState.value = {
+      mutateAsync: vi.fn<(a: string) => Promise<string>>().mockResolvedValue("ts"),
+      isPending: false,
+    };
+    abortState.value = {
+      mutateAsync: vi.fn<(a: string) => Promise<void>>().mockResolvedValue(undefined),
+      isPending: false,
+    };
+    latestScoreState.value = { data: null, isLoading: false, error: null };
+  });
+
+  it("Disclaimer zeigt prominente Stoppe-bei-Liste mit mehreren Signalen", () => {
+    renderPage();
+    expect(screen.getByText(/Stoppe sofort/i)).toBeInTheDocument();
+    expect(screen.getByText(/Druckgefuehl in der Brust/i)).toBeInTheDocument();
+    expect(screen.getByText(/Schwindel/i)).toBeInTheDocument();
+    expect(screen.getByText(/Atemnot/i)).toBeInTheDocument();
+  });
+
+  it("Result-Screen zeigt Score-Hero, Radar-Chart und Pace-Erklaerbarkeit", async () => {
+    renderPage();
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: /Test starten/ }));
+    await waitFor(() => expect(screen.getByText(/Warm-up 1 \/ 3/)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /Ueberspringen/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Ueberspringen/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Ueberspringen/ }));
+
+    const values = [12, 30, 25, 45, 60];
+    for (let i = 0; i < 5; i += 1) {
+      fireEvent.click(screen.getByRole("button", { name: /Fertig, Wert eingeben/ }));
+      const input = await screen.findByRole("spinbutton");
+      fireEvent.change(input, { target: { value: String(values[i]) } });
+      fireEvent.click(screen.getByRole("button", { name: /Weiter/ }));
+      await waitFor(() =>
+        expect(saveState.value.mutateAsync).toHaveBeenCalledTimes(i + 1),
+      );
+    }
+    fireEvent.click(screen.getByRole("button", { name: /Test abschliessen/ }));
+    await waitFor(() => expect(completeState.value.mutateAsync).toHaveBeenCalledTimes(1));
+
+    expect(screen.getByText(/CRS · RANG/)).toBeInTheDocument();
+    expect(screen.getByText(/Score wird berechnet/)).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /Radar-Chart/i })).toBeInTheDocument();
+    expect(screen.getByText(/Warum diese Zahl\?/)).toBeInTheDocument();
+    expect(screen.getByText(/Beste Disziplin/)).toBeInTheDocument();
+    expect(screen.getByText(/Verbesserungs-Potenzial/)).toBeInTheDocument();
   });
 });

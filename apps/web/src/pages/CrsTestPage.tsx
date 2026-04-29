@@ -1,6 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { DisclaimerStep } from "../components/crs/DisclaimerStep";
+import { RecoveryPrompt } from "../components/crs/RecoveryPrompt";
+import { LiveTimerStep } from "../components/crs/LiveTimerStep";
+import { ExerciseInputStep } from "../components/crs/ExerciseInputStep";
+import { ResultStep } from "../components/crs/ResultStep";
 import {
   useAbortCrsTest,
   useCompleteCrsTest,
@@ -11,6 +16,7 @@ import {
   CRS_COOLDOWN_DURATION_S,
   CRS_EXERCISE_DURATION_S,
   CRS_WARMUP_ROUND_DURATION_S,
+  type CrsExerciseKey,
   getCrsExercise,
   getCrsWarmupHint,
   nextStep,
@@ -39,6 +45,7 @@ export function CrsTestPage() {
   const [clientUuid, setClientUuid] = useState<string>(() => newCrsClientUuid());
   const [mode, setMode] = useState<Mode>("fresh");
   const [resuming, setResuming] = useState(false);
+  const [raws, setRaws] = useState<Partial<Record<CrsExerciseKey, number>>>({});
 
   useEffect(() => {
     const recovered = loadCrsRecovery();
@@ -97,6 +104,7 @@ export function CrsTestPage() {
     setTestId(null);
     setAccepted(false);
     setClientUuid(newCrsClientUuid());
+    setRaws({});
     setMode("fresh");
   }
 
@@ -122,6 +130,7 @@ export function CrsTestPage() {
     const exercise = getCrsExercise(step.index);
     try {
       await save.mutateAsync({ testId, exercise: exercise.key, value });
+      setRaws((r) => ({ ...r, [exercise.key]: value }));
       advance();
     } catch (err) {
       logger.error("crs_save_failed", err);
@@ -143,17 +152,33 @@ export function CrsTestPage() {
   return (
     <section className="space-y-6">
       <header className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold">CRS-Fitnesstest</h1>
-          <p className="text-sm text-slate-400">
-            Standardisierter Test: 5 Uebungen a 60 Sekunden. PRD §06.
+        <div className="space-y-1">
+          <p
+            className="text-xs tracking-[0.18em] uppercase"
+            style={{ fontFamily: "var(--font-mono)", color: "var(--color-ink-3)" }}
+          >
+            CRS · 5 Uebungen · 60 s
           </p>
+          <h1
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "2rem",
+              letterSpacing: "-0.02em",
+              color: "var(--color-ink)",
+            }}
+          >
+            Fitnesstest
+          </h1>
         </div>
         {mode === "active" && step.kind !== "result" && (
           <button
             type="button"
             onClick={() => void handleAbort()}
-            className="text-sm text-red-400 underline"
+            className="text-xs tracking-[0.18em] uppercase"
+            style={{
+              fontFamily: "var(--font-mono)",
+              color: "var(--color-accent-2)",
+            }}
           >
             Abbrechen
           </button>
@@ -179,7 +204,7 @@ export function CrsTestPage() {
       )}
 
       {mode === "active" && step.kind === "warmup" && (
-        <TimerStep
+        <LiveTimerStep
           key={`warmup-${step.round}`}
           title={`Warm-up ${step.round + 1} / 3`}
           hint={getCrsWarmupHint(step.round)}
@@ -190,7 +215,7 @@ export function CrsTestPage() {
       )}
 
       {mode === "active" && step.kind === "exercise" && step.phase === "countdown" && (
-        <TimerStep
+        <LiveTimerStep
           key={`exercise-${step.index}`}
           title={`Uebung ${step.index + 1} / 5 – ${getCrsExercise(step.index).label}`}
           hint={`Los! ${getCrsExercise(step.index).unit}. Zaehle fuer dich selbst mit.`}
@@ -211,7 +236,7 @@ export function CrsTestPage() {
       )}
 
       {mode === "active" && step.kind === "cooldown" && (
-        <TimerStep
+        <LiveTimerStep
           key="cooldown"
           title="Cool-down"
           hint="Ruhig ausatmen, locker gehen. 2 Minuten Erholung."
@@ -222,227 +247,8 @@ export function CrsTestPage() {
       )}
 
       {step.kind === "result" && (
-        <ResultStep onBack={() => void navigate("/app/dashboard")} />
+        <ResultStep raws={raws} onBack={() => void navigate("/app/dashboard")} />
       )}
     </section>
-  );
-}
-
-function describeStep(step: CrsStep): string {
-  switch (step.kind) {
-    case "disclaimer":
-      return "Disclaimer";
-    case "warmup":
-      return `Warm-up ${step.round + 1} / 3`;
-    case "exercise":
-      return `Uebung ${step.index + 1} / 5 – ${getCrsExercise(step.index).label} (${
-        step.phase === "countdown" ? "Countdown" : "Werteingabe"
-      })`;
-    case "cooldown":
-      return "Cool-down";
-    case "result":
-      return "Ergebnis";
-  }
-}
-
-type RecoveryProps = {
-  step: CrsStep;
-  onResume: () => void;
-  onDiscard: () => void;
-  pending: boolean;
-};
-
-function RecoveryPrompt({ step, onResume, onDiscard, pending }: RecoveryProps) {
-  return (
-    <div className="space-y-4 rounded-lg border border-amber-700 bg-amber-950/40 p-5">
-      <h2 className="text-lg font-semibold">Laufenden Test fortsetzen?</h2>
-      <p className="text-sm text-slate-200">
-        Wir haben einen unterbrochenen CRS-Test gefunden. Letzter Schritt:{" "}
-        <strong>{describeStep(step)}</strong>.
-      </p>
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          disabled={pending}
-          onClick={onResume}
-          className="rounded bg-amber-500 px-4 py-2 text-sm font-medium text-slate-900 disabled:opacity-50"
-        >
-          {pending ? "Lade …" : "Fortsetzen"}
-        </button>
-        <button
-          type="button"
-          disabled={pending}
-          onClick={onDiscard}
-          className="rounded border border-slate-700 px-3 py-1.5 text-sm text-slate-200 disabled:opacity-50"
-        >
-          Neu starten
-        </button>
-      </div>
-    </div>
-  );
-}
-
-type DisclaimerProps = {
-  accepted: boolean;
-  onAcceptedChange: (v: boolean) => void;
-  onStart: () => void;
-  pending: boolean;
-};
-
-function DisclaimerStep({
-  accepted,
-  onAcceptedChange,
-  onStart,
-  pending,
-}: DisclaimerProps) {
-  return (
-    <div className="space-y-4 rounded-lg border border-slate-800 bg-slate-900 p-5">
-      <h2 className="text-lg font-semibold">Gesundheits-Hinweis</h2>
-      <p className="text-sm text-slate-300">
-        Der CRS-Test fordert deinen Koerper voll. Brich sofort ab, wenn du Schmerzen,
-        Schwindel oder Engegefuehl in der Brust verspuerst. Bei Vorerkrankungen sprich
-        vorher mit einer aerztlichen Fachkraft.
-      </p>
-      <label className="flex items-start gap-2 text-sm">
-        <input
-          type="checkbox"
-          checked={accepted}
-          onChange={(e) => onAcceptedChange(e.target.checked)}
-        />
-        <span>Ich fuehle mich gesundheitlich fit fuer einen fordernden Fitnesstest.</span>
-      </label>
-      <button
-        type="button"
-        disabled={!accepted || pending}
-        onClick={onStart}
-        className="rounded bg-amber-500 px-4 py-2 text-sm font-medium text-slate-900 disabled:opacity-50"
-      >
-        {pending ? "Starte …" : "Test starten"}
-      </button>
-    </div>
-  );
-}
-
-type TimerProps = {
-  title: string;
-  hint: string;
-  durationSeconds: number;
-  onDone: () => void;
-  ctaLabel: string;
-};
-
-function TimerStep({ title, hint, durationSeconds, onDone, ctaLabel }: TimerProps) {
-  const [remaining, setRemaining] = useState(durationSeconds);
-  const doneRef = useRef(false);
-
-  useEffect(() => {
-    const id = window.setInterval(() => {
-      setRemaining((r) => (r > 0 ? r - 1 : 0));
-    }, 1000);
-    return () => window.clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    if (remaining === 0 && !doneRef.current) {
-      doneRef.current = true;
-      onDone();
-    }
-  }, [remaining, onDone]);
-
-  const mm = Math.floor(remaining / 60)
-    .toString()
-    .padStart(2, "0");
-  const ss = (remaining % 60).toString().padStart(2, "0");
-
-  return (
-    <div className="space-y-4 rounded-lg border border-slate-800 bg-slate-900 p-5">
-      <h2 className="text-lg font-semibold">{title}</h2>
-      <p className="text-sm text-slate-300">{hint}</p>
-      <p className="font-mono text-5xl text-amber-400 tabular-nums" aria-live="polite">
-        {mm}:{ss}
-      </p>
-      <button
-        type="button"
-        onClick={onDone}
-        className="rounded border border-slate-700 px-3 py-1.5 text-sm text-slate-200"
-      >
-        {ctaLabel}
-      </button>
-    </div>
-  );
-}
-
-type ExerciseInputProps = {
-  label: string;
-  unit: string;
-  max: number;
-  pending: boolean;
-  onSubmit: (value: number) => void;
-};
-
-function ExerciseInputStep({ label, unit, max, pending, onSubmit }: ExerciseInputProps) {
-  const [raw, setRaw] = useState("");
-  const [error, setError] = useState<string | null>(null);
-
-  function handleSubmit() {
-    const n = Number.parseInt(raw, 10);
-    if (Number.isNaN(n) || n < 0) {
-      setError("Bitte eine Zahl >= 0 eingeben.");
-      return;
-    }
-    if (n > max) {
-      setError(`Wert ueber plausibler Obergrenze (max. ${max}).`);
-      return;
-    }
-    setError(null);
-    onSubmit(n);
-  }
-
-  return (
-    <div className="space-y-3 rounded-lg border border-slate-800 bg-slate-900 p-5">
-      <h2 className="text-lg font-semibold">{label} – Wert eintragen</h2>
-      <label className="block text-sm text-slate-300">
-        {unit}
-        <input
-          type="number"
-          inputMode="numeric"
-          value={raw}
-          onChange={(e) => setRaw(e.target.value)}
-          className="mt-1 block w-32 rounded border border-slate-700 bg-slate-950 px-2 py-1 text-slate-100"
-          min={0}
-          max={max}
-        />
-      </label>
-      {error && <p className="text-sm text-red-400">{error}</p>}
-      <button
-        type="button"
-        disabled={pending || raw === ""}
-        onClick={handleSubmit}
-        className="rounded bg-amber-500 px-4 py-2 text-sm font-medium text-slate-900 disabled:opacity-50"
-      >
-        {pending ? "Speichere …" : "Weiter"}
-      </button>
-    </div>
-  );
-}
-
-type ResultProps = { onBack: () => void };
-
-function ResultStep({ onBack }: ResultProps) {
-  return (
-    <div className="space-y-3 rounded-lg border border-slate-800 bg-slate-900 p-5">
-      <h2 className="text-lg font-semibold">Test gespeichert</h2>
-      <p className="text-sm text-slate-300">
-        Deine fuenf Uebungen sind erfasst. Rang, Radar-Chart und Archetyp folgen im
-        naechsten Schritt der Roadmap (Score-Berechnung §1.17, Result-Screen §1.18).
-      </p>
-      <button
-        type="button"
-        onClick={onBack}
-        className="rounded border border-slate-700 px-3 py-1.5 text-sm text-slate-200"
-      >
-        Zum Dashboard
-      </button>
-    </div>
   );
 }
