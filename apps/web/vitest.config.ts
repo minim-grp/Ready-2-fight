@@ -6,7 +6,11 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
-    include: ["src/**/*.test.{ts,tsx}", "../../supabase/functions/_shared/*.test.ts"],
+    // Pure-Logic-Tests in supabase/functions/**/*.test.ts laufen mit hier mit,
+    // damit kuenftige Edge-Function-PRs keine Vitest-Konfig-Aenderung brauchen.
+    // Edge-Function-Tests muessen Browser-/jsdom-frei sein (keine React/DOM-
+    // Imports) und keine Deno-Globals nutzen — nur reine TypeScript-Logik.
+    include: ["src/**/*.test.{ts,tsx}", "../../supabase/functions/**/*.test.ts"],
   },
   resolve: {
     alias: {
