@@ -163,15 +163,23 @@ SELECT tests.throws_with_state(
   'authenticated DELETE auf crs_norms wird verweigert'
 );
 
--- anon hat kein SELECT-Grant (Policy ist TO authenticated, anon-Default-Deny)
-SELECT tests.throws_with_state(
-  NULL,
-  $sql$ DO $inner$ BEGIN
-          PERFORM set_config('role', 'anon', true);
-          PERFORM count(*) FROM public.crs_norms;
-        END $inner$ $sql$,
-  '*',
-  'anon-Rolle blockiert auf crs_norms'
+-- anon hat kein SELECT-Grant (REVOKE ALL ... FROM anon in der Migration)
+DO $$
+DECLARE _caught boolean := false;
+BEGIN
+  BEGIN
+    SET LOCAL ROLE anon;
+    PERFORM count(*) FROM public.crs_norms;
+  EXCEPTION WHEN OTHERS THEN _caught := true;
+  END;
+  RESET ROLE;
+  CREATE TEMP TABLE _anon_blocked(b boolean);
+  INSERT INTO _anon_blocked VALUES (_caught);
+END $$;
+
+SELECT ok(
+  (SELECT b FROM _anon_blocked),
+  'anon-Rolle blockiert auf crs_norms (kein SELECT-Grant)'
 );
 
 

@@ -41,7 +41,11 @@ DROP POLICY IF EXISTS crs_norms_read ON public.crs_norms;
 CREATE POLICY crs_norms_read ON public.crs_norms
   FOR SELECT TO authenticated USING (true);
 
-REVOKE ALL ON public.crs_norms FROM PUBLIC;
+-- Default-Privileges in Supabase geben authenticated/anon Insert/Update/
+-- Delete-Grants auf public.* — RLS-USING ohne UPDATE/DELETE-Policy
+-- filtert dann silent 0 Rows statt einen Error zu werfen. Wir wollen
+-- harte permission-denied-Errors, daher explizit revoken:
+REVOKE ALL ON public.crs_norms FROM PUBLIC, anon, authenticated;
 GRANT SELECT ON public.crs_norms TO authenticated;
 
 
