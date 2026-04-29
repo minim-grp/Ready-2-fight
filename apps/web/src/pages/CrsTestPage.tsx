@@ -9,6 +9,7 @@ import { ResultStep } from "../components/crs/ResultStep";
 import {
   useAbortCrsTest,
   useCompleteCrsTest,
+  useComputeCrsScore,
   useSaveCrsExercise,
   useStartCrsTest,
 } from "../hooks/queries/useCrsTest";
@@ -37,6 +38,7 @@ export function CrsTestPage() {
   const start = useStartCrsTest();
   const save = useSaveCrsExercise();
   const complete = useCompleteCrsTest();
+  const compute = useComputeCrsScore();
   const abort = useAbortCrsTest();
 
   const [step, setStep] = useState<CrsStep>({ kind: "disclaimer" });
@@ -143,6 +145,13 @@ export function CrsTestPage() {
     try {
       await complete.mutateAsync(testId);
       advance();
+      // Score-Berechnung darf scheitern, ohne dass der Test ungueltig wird —
+      // Edge Function ist idempotent, ResultStep refetcht ueber invalidate.
+      try {
+        await compute.mutateAsync(testId);
+      } catch (err) {
+        logger.warn("crs_compute_failed", err);
+      }
     } catch (err) {
       logger.error("crs_complete_failed", err);
       toast.error("Test konnte nicht abgeschlossen werden.");

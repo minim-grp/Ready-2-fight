@@ -53,6 +53,35 @@ export function useCompleteCrsTest() {
   });
 }
 
+export type ComputeCrsScoreResult = {
+  score: number | null;
+  rank_label: string | null;
+  rank_name?: string | null;
+  archetype: string | null;
+  per_exercise?: Record<string, number>;
+  invalid_reason?: "too_many_zeros" | null;
+  reduced_scope?: boolean;
+  already_computed?: boolean;
+};
+
+export function useComputeCrsScore() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (testId: string): Promise<ComputeCrsScoreResult> => {
+      const result = await supabase.functions.invoke<ComputeCrsScoreResult>(
+        "compute-crs-score",
+        { body: { test_id: testId } },
+      );
+      if (result.error) throw result.error;
+      if (!result.data) throw new Error("compute_crs_score_no_data");
+      return result.data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["crs-tests"] });
+    },
+  });
+}
+
 export function useAbortCrsTest() {
   const qc = useQueryClient();
   return useMutation({

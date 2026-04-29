@@ -418,11 +418,38 @@ export type Database = {
           },
         ];
       };
+      crs_norms: {
+        Row: {
+          age_factor_curve: Json;
+          base_target: number;
+          exercise: string;
+          gender_factor: Json;
+          updated_at: string;
+          weight_factor_curve: Json;
+        };
+        Insert: {
+          age_factor_curve: Json;
+          base_target: number;
+          exercise: string;
+          gender_factor: Json;
+          updated_at?: string;
+          weight_factor_curve: Json;
+        };
+        Update: {
+          age_factor_curve?: Json;
+          base_target?: number;
+          exercise?: string;
+          gender_factor?: Json;
+          updated_at?: string;
+          weight_factor_curve?: Json;
+        };
+        Relationships: [];
+      };
       crs_tests: {
         Row: {
           archetype: string | null;
           athlete_id: string;
-          burpees_30s: number | null;
+          burpees_60s: number | null;
           client_uuid: string | null;
           completed_at: string | null;
           created_at: string;
@@ -439,7 +466,7 @@ export type Database = {
         Insert: {
           archetype?: string | null;
           athlete_id: string;
-          burpees_30s?: number | null;
+          burpees_60s?: number | null;
           client_uuid?: string | null;
           completed_at?: string | null;
           created_at?: string;
@@ -456,7 +483,7 @@ export type Database = {
         Update: {
           archetype?: string | null;
           athlete_id?: string;
-          burpees_30s?: number | null;
+          burpees_60s?: number | null;
           client_uuid?: string | null;
           completed_at?: string | null;
           created_at?: string;
