@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { ConfirmDialog } from "../components/common/ConfirmDialog";
 import { DisclaimerStep } from "../components/crs/DisclaimerStep";
 import { RecoveryPrompt } from "../components/crs/RecoveryPrompt";
 import { LiveTimerStep } from "../components/crs/LiveTimerStep";
@@ -48,6 +49,7 @@ export function CrsTestPage() {
   const [mode, setMode] = useState<Mode>("fresh");
   const [resuming, setResuming] = useState(false);
   const [raws, setRaws] = useState<Partial<Record<CrsExerciseKey, number>>>({});
+  const [confirmingAbort, setConfirmingAbort] = useState(false);
 
   useEffect(() => {
     const recovered = loadCrsRecovery();
@@ -110,20 +112,26 @@ export function CrsTestPage() {
     setMode("fresh");
   }
 
-  async function handleAbort() {
+  function handleAbortClick() {
     if (!testId) {
       clearCrsRecovery();
       void navigate("/app/dashboard");
       return;
     }
-    if (!window.confirm("Test wirklich abbrechen? Deine Werte gehen verloren.")) return;
+    setConfirmingAbort(true);
+  }
+
+  async function handleAbortConfirmed() {
+    if (!testId) return;
     try {
       await abort.mutateAsync(testId);
       clearCrsRecovery();
+      setConfirmingAbort(false);
       void navigate("/app/dashboard");
     } catch (err) {
       logger.error("crs_abort_failed", err);
       toast.error("Abbruch fehlgeschlagen.");
+      setConfirmingAbort(false);
     }
   }
 
@@ -182,7 +190,7 @@ export function CrsTestPage() {
         {mode === "active" && step.kind !== "result" && (
           <button
             type="button"
-            onClick={() => void handleAbort()}
+            onClick={handleAbortClick}
             className="text-xs tracking-[0.18em] uppercase"
             style={{
               fontFamily: "var(--font-mono)",
@@ -193,6 +201,18 @@ export function CrsTestPage() {
           </button>
         )}
       </header>
+
+      <ConfirmDialog
+        open={confirmingAbort}
+        title="Test abbrechen?"
+        description="Deine erfassten Werte gehen verloren. Du kannst jederzeit einen neuen Test starten."
+        confirmLabel="Ja, abbrechen"
+        cancelLabel="Weiter testen"
+        destructive
+        pending={abort.isPending}
+        onCancel={() => setConfirmingAbort(false)}
+        onConfirm={() => void handleAbortConfirmed()}
+      />
 
       {mode === "recovery-prompt" && (
         <RecoveryPrompt

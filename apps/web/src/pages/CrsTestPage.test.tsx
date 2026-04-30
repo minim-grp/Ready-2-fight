@@ -104,8 +104,7 @@ describe("CrsTestPage state machine", () => {
     });
   });
 
-  it("Abbrechen ruft abort_crs_test wenn testId gesetzt", async () => {
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+  it("Abbrechen oeffnet Confirm-Modal und ruft abort erst nach Bestaetigung", async () => {
     renderPage();
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: /Test starten/ }));
@@ -113,10 +112,25 @@ describe("CrsTestPage state machine", () => {
       expect(screen.getByRole("button", { name: /Abbrechen/ })).toBeInTheDocument(),
     );
     fireEvent.click(screen.getByRole("button", { name: /Abbrechen/ }));
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(abortState.value.mutateAsync).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: /Ja, abbrechen/ }));
     await waitFor(() =>
       expect(abortState.value.mutateAsync).toHaveBeenCalledWith("test-id"),
     );
-    confirmSpy.mockRestore();
+  });
+
+  it("Confirm-Modal `Weiter testen` schliesst Dialog ohne Abort", async () => {
+    renderPage();
+    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("button", { name: /Test starten/ }));
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: /Abbrechen/ })).toBeInTheDocument(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /Abbrechen/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Weiter testen/ }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(abortState.value.mutateAsync).not.toHaveBeenCalled();
   });
 
   it("Input-Step lehnt unplausibel hohe Werte lokal ab", async () => {
@@ -266,8 +280,7 @@ describe("CrsTestPage interruption recovery (1.16)", () => {
     );
   });
 
-  it("Abbrechen loescht Recovery", async () => {
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+  it("Abbrechen loescht Recovery (nach Confirm-Bestaetigung)", async () => {
     renderPage();
     fireEvent.click(screen.getByRole("checkbox"));
     fireEvent.click(screen.getByRole("button", { name: /Test starten/ }));
@@ -275,10 +288,10 @@ describe("CrsTestPage interruption recovery (1.16)", () => {
       expect(window.localStorage.getItem("r2f.crs.recovery")).not.toBeNull(),
     );
     fireEvent.click(screen.getByRole("button", { name: /Abbrechen/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Ja, abbrechen/ }));
     await waitFor(() =>
       expect(window.localStorage.getItem("r2f.crs.recovery")).toBeNull(),
     );
-    confirmSpy.mockRestore();
   });
 });
 
