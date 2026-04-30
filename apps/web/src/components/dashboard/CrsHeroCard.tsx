@@ -1,8 +1,13 @@
 import { Link } from "react-router-dom";
 import { useLatestCrsScore } from "../../hooks/queries/useLatestCrsScore";
+import { useCrsHistory } from "../../hooks/queries/useCrsHistory";
+import { CrsSparkline } from "./CrsSparkline";
 
 export function CrsHeroCard() {
   const q = useLatestCrsScore();
+  const history = useCrsHistory();
+  const points = history.data ?? [];
+  const hasHistory = points.length >= 2;
 
   return (
     <div
@@ -37,7 +42,12 @@ export function CrsHeroCard() {
         <>
           <CrsHeroHeader hasTest={!!q.data} rank={q.data?.rank ?? null} />
           <CrsHeroNumber score={q.data?.score ?? null} hasTest={!!q.data} />
-          <CrsHeroCta hasTest={!!q.data} />
+          {hasHistory && (
+            <div className="mt-4">
+              <CrsSparkline points={points} />
+            </div>
+          )}
+          <CrsHeroCta hasTest={!!q.data} hasHistory={hasHistory} />
         </>
       )}
     </div>
@@ -99,9 +109,9 @@ function CrsHeroNumber({ score, hasTest }: { score: number | null; hasTest: bool
   );
 }
 
-function CrsHeroCta({ hasTest }: { hasTest: boolean }) {
+function CrsHeroCta({ hasTest, hasHistory }: { hasTest: boolean; hasHistory: boolean }) {
   return (
-    <div className="mt-5">
+    <div className="mt-5 flex flex-wrap items-center gap-3">
       <Link
         to="/app/crs/test"
         className="inline-block rounded-2xl px-5 py-3 text-sm font-medium"
@@ -112,6 +122,20 @@ function CrsHeroCta({ hasTest }: { hasTest: boolean }) {
       >
         {hasTest ? "Neuen Test starten" : "Ersten Test starten"}
       </Link>
+      {hasHistory && (
+        <Link
+          to="/app/crs/history"
+          className="inline-block rounded-2xl px-4 py-2 text-xs tracking-[0.18em] uppercase"
+          style={{
+            fontFamily: "var(--font-mono)",
+            border: "1px solid var(--line-2)",
+            color: "var(--color-on-night-2)",
+            backgroundColor: "transparent",
+          }}
+        >
+          Verlauf ansehen
+        </Link>
+      )}
     </div>
   );
 }
