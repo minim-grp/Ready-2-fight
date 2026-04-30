@@ -104,6 +104,24 @@ export function useCreatePlan() {
   });
 }
 
+export function useClonePlan() {
+  const qc = useQueryClient();
+  const userId = useAuthStore((s) => s.user?.id);
+  return useMutation({
+    mutationFn: async (planId: string): Promise<string> => {
+      const { data, error } = await supabase.rpc("clone_plan", {
+        p_plan_id: planId,
+      });
+      if (error) throw error;
+      if (!data) throw new Error("clone_plan_no_id");
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["plans", "coach", userId] });
+    },
+  });
+}
+
 export function useDeletePlan() {
   const qc = useQueryClient();
   const userId = useAuthStore((s) => s.user?.id);

@@ -28,6 +28,9 @@ const createState: { value: MutationState } = {
 const deleteState: { value: MutationState } = {
   value: { mutateAsync: vi.fn().mockResolvedValue(undefined), isPending: false },
 };
+const cloneState: { value: MutationState } = {
+  value: { mutateAsync: vi.fn().mockResolvedValue("p-clone"), isPending: false },
+};
 
 vi.mock("../hooks/queries/useProfile", () => ({
   useProfile: () => profileState.value,
@@ -39,6 +42,7 @@ vi.mock("../hooks/queries/usePlans", () => ({
   useCoachPlans: () => plansState.value,
   useCreatePlan: () => createState.value,
   useDeletePlan: () => deleteState.value,
+  useClonePlan: () => cloneState.value,
 }));
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
@@ -60,6 +64,10 @@ describe("PlansPage", () => {
     };
     deleteState.value = {
       mutateAsync: vi.fn().mockResolvedValue(undefined),
+      isPending: false,
+    };
+    cloneState.value = {
+      mutateAsync: vi.fn().mockResolvedValue("p-clone"),
       isPending: false,
     };
   });
@@ -179,6 +187,32 @@ describe("PlansPage", () => {
     expect(deleteState.value.mutateAsync).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: /Ja, loeschen/ }));
     await waitFor(() => expect(deleteState.value.mutateAsync).toHaveBeenCalledWith("p1"));
+  });
+
+  it("Kopie-Button ruft clone_plan-Mutation mit Plan-ID", async () => {
+    plansState.value = {
+      data: [
+        {
+          id: "p1",
+          owner_id: "c1",
+          athlete_id: null,
+          athlete_name: null,
+          title: "Boxen 4 Wochen",
+          description: null,
+          is_template: true,
+          archived_at: null,
+          starts_on: null,
+          ends_on: null,
+          created_at: "2026-04-30T00:00:00Z",
+          updated_at: "2026-04-30T00:00:00Z",
+        },
+      ],
+      isLoading: false,
+      error: null,
+    };
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: /Plan Boxen 4 Wochen kopieren/ }));
+    await waitFor(() => expect(cloneState.value.mutateAsync).toHaveBeenCalledWith("p1"));
   });
 
   it("redirected wenn nicht Coach-View", () => {
