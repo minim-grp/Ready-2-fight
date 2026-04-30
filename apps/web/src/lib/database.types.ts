@@ -1379,6 +1379,7 @@ export type Database = {
         Returns: boolean;
       };
       cleanup_expired_tracking: { Args: never; Returns: undefined };
+      clone_plan: { Args: { p_plan_id: string }; Returns: string };
       complete_crs_test: { Args: { p_test_id: string }; Returns: string };
       end_engagement: {
         Args: { p_end_reason?: string; p_engagement_id: string };
