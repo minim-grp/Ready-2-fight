@@ -127,6 +127,19 @@ export type PlanSession = {
   position: number;
 };
 
+export type PlanExercise = {
+  id: string;
+  session_id: string;
+  name: string;
+  sets: number | null;
+  reps: number | null;
+  weight_kg: number | null;
+  duration_sec: number | null;
+  rest_sec: number | null;
+  notes: string | null;
+  position: number;
+};
+
 export type PlanWithSessions = CoachPlan & { sessions: PlanSession[] };
 
 export function usePlan(planId: string | undefined) {
@@ -266,6 +279,105 @@ export function useSwapSessions() {
     },
     onSuccess: (_v, vars) => {
       void qc.invalidateQueries({ queryKey: ["plans", "detail", vars.plan_id] });
+    },
+  });
+}
+
+// ============================================================
+// Exercises (training_exercises)
+// ============================================================
+
+export function useSessionExercises(sessionId: string | undefined) {
+  return useQuery({
+    enabled: !!sessionId,
+    queryKey: ["plan-sessions", sessionId, "exercises"],
+    queryFn: async (): Promise<PlanExercise[]> => {
+      const { data, error } = await supabase
+        .from("training_exercises")
+        .select(
+          "id, session_id, name, sets, reps, weight_kg, duration_sec, rest_sec, notes, position",
+        )
+        .eq("session_id", sessionId!)
+        .order("position", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as PlanExercise[];
+    },
+  });
+}
+
+export type CreateExerciseInput = {
+  session_id: string;
+  name: string;
+  sets: number | null;
+  reps: number | null;
+  weight_kg: number | null;
+  duration_sec: number | null;
+  rest_sec: number | null;
+  notes: string | null;
+  position: number;
+};
+
+export function useCreateExercise() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: CreateExerciseInput): Promise<string> => {
+      const { data, error } = await supabase
+        .from("training_exercises")
+        .insert(input)
+        .select("id")
+        .single();
+      if (error) throw error;
+      return data.id;
+    },
+    onSuccess: (_id, vars) => {
+      void qc.invalidateQueries({
+        queryKey: ["plan-sessions", vars.session_id, "exercises"],
+      });
+    },
+  });
+}
+
+export function useDeleteExercise() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; session_id: string }): Promise<void> => {
+      const { error } = await supabase
+        .from("training_exercises")
+        .delete()
+        .eq("id", input.id);
+      if (error) throw error;
+    },
+    onSuccess: (_v, vars) => {
+      void qc.invalidateQueries({
+        queryKey: ["plan-sessions", vars.session_id, "exercises"],
+      });
+    },
+  });
+}
+
+export function useSwapExercises() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      session_id: string;
+      a: PlanExercise;
+      b: PlanExercise;
+    }): Promise<void> => {
+      const { error: errA } = await supabase
+        .from("training_exercises")
+        .update({ position: input.b.position })
+        .eq("id", input.a.id);
+      if (errA) throw errA;
+      const { error: errB } = await supabase
+        .from("training_exercises")
+        .update({ position: input.a.position })
+        .eq("id", input.b.id);
+      if (errB) throw errB;
+    },
+    onSuccess: (_v, vars) => {
+      void qc.invalidateQueries({
+        queryKey: ["plan-sessions", vars.session_id, "exercises"],
+      });
     },
   });
 }
