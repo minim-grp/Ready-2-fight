@@ -14,10 +14,14 @@ const ATHLETE_ITEMS: NavItem[] = [
 const COACH_ITEMS: NavItem[] = [
   { to: "/app/dashboard", label: "Dashboard" },
   { to: "/app/engagements", label: "Athleten" },
+  { to: "/app/plans", label: "Plaene" },
   { to: "/app/codes", label: "Codes" },
   { to: "/app/settings", label: "Profil" },
 ];
 
+// BOTH-Rolle: BottomNav ist auf max 5 Tabs limitiert. Plaene-Tab ist
+// nur im Coach-Mode aktiv (per useModeStore-Switch im Settings),
+// daher hier nicht doppelt aufnehmen.
 const BOTH_ITEMS: NavItem[] = [
   { to: "/app/dashboard", label: "Heute" },
   { to: "/app/tracking", label: "Tracking" },
