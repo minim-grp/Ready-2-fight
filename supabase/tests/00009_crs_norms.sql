@@ -13,7 +13,7 @@
 
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap;
-SELECT plan(13);
+SELECT plan(14);
 
 CREATE SCHEMA IF NOT EXISTS tests;
 
@@ -107,6 +107,14 @@ SELECT is(
   (SELECT base_target FROM public.crs_norms WHERE exercise = 'plank'),
   60::numeric,
   'plank base_target = 60 (Anhang B)'
+);
+
+-- gender_factor: alle Zeilen nutzen 'diverse' (DB-Enum-Key), kein 'other' mehr
+SELECT is(
+  (SELECT count(*)::int FROM public.crs_norms
+    WHERE gender_factor ? 'diverse' AND NOT gender_factor ? 'other'),
+  5,
+  'crs_norms.gender_factor nutzt diverse-Key (kein other-Alias mehr)'
 );
 
 
