@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useProfile } from "../hooks/queries/useProfile";
 import { useModeStore } from "../stores/mode";
@@ -155,7 +155,11 @@ function PlanCard({ plan, onDelete }: PlanCardProps) {
   return (
     <li className="rounded-[22px] p-5" style={CARD_STYLE}>
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
+        <Link
+          to={`/app/plans/${plan.id}`}
+          className="min-w-0 flex-1"
+          style={{ textDecoration: "none" }}
+        >
           <p
             className="text-xs tracking-[0.18em] uppercase"
             style={{ fontFamily: "var(--font-mono)", color: "var(--color-ink-3)" }}
@@ -186,7 +190,7 @@ function PlanCard({ plan, onDelete }: PlanCardProps) {
               {dateLine}
             </p>
           )}
-        </div>
+        </Link>
         <button
           type="button"
           onClick={onDelete}
