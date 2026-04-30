@@ -63,10 +63,6 @@ const RAW_TO_KEY: Record<CrsExerciseKey, keyof CrsRawValues> = {
   high_knees: "high_knees_contacts",
 };
 
-// gender_factor-JSONB-Seed nutzt 'other' als Key, das public.gender-Enum
-// nutzt 'diverse'. Alias bis ein Followup-Migration die Keys angleicht.
-const GENDER_ALIAS: Record<string, string> = { diverse: "other" };
-
 export function ageAt(birthDate: string | null, refDate: Date): number | null {
   if (!birthDate) return null;
   const b = new Date(birthDate);
@@ -105,8 +101,7 @@ export function interpolateCurve(
 
 function genderFactor(gender: string | null, map: Record<string, number>): number {
   if (!gender) return 1.0;
-  const key = GENDER_ALIAS[gender] ?? gender;
-  return map[key] ?? 1.0;
+  return map[gender] ?? 1.0;
 }
 
 export function personalizedTarget(

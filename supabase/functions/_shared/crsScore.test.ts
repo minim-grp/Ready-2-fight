@@ -22,7 +22,7 @@ const NORMS: CrsNormRow[] = [
       { age: 25, factor: 1.0 },
       { age: 45, factor: 0.9 },
     ],
-    gender_factor: { male: 1.0, female: 0.78, other: 0.89 },
+    gender_factor: { male: 1.0, female: 0.78, diverse: 0.89 },
   },
   {
     exercise: "squats",
@@ -97,9 +97,13 @@ describe("personalizedTarget", () => {
     const t = personalizedTarget(NORMS[0], { ...REF_PROFILE, gender: "female" }, REF);
     expect(t).toBeCloseTo(25 * 0.78, 5);
   });
-  it("Diverse-Enum (DB) wird auf other-Lookup gemappt", () => {
+  it("Diverse-Enum (DB) trifft den Seed-Key direkt", () => {
     const t = personalizedTarget(NORMS[0], { ...REF_PROFILE, gender: "diverse" }, REF);
     expect(t).toBeCloseTo(25 * 0.89, 5);
+  });
+  it("Unbekannter Gender-Key faellt auf Faktor 1.0 zurueck", () => {
+    const t = personalizedTarget(NORMS[0], { ...REF_PROFILE, gender: "other" }, REF);
+    expect(t).toBeCloseTo(25, 5);
   });
 });
 
