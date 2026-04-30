@@ -10,8 +10,8 @@
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "test:db": "supabase test db",
-    "types:gen": "supabase gen types typescript --project-id gsrdpwoejnuigbxhfgyr --schema public > apps/web/src/lib/database.types.ts",
+    "test:db": "pnpm -s dlx supabase test db",
+    "types:gen": "node scripts/types-gen.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky"
