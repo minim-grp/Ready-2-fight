@@ -1,9 +1,14 @@
 import { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useProfile } from "../hooks/queries/useProfile";
 import { useModeStore } from "../stores/mode";
-import { useCoachPlans, useDeletePlan, type CoachPlan } from "../hooks/queries/usePlans";
+import {
+  useClonePlan,
+  useCoachPlans,
+  useDeletePlan,
+  type CoachPlan,
+} from "../hooks/queries/usePlans";
 import { CreatePlanModal } from "../components/plans/CreatePlanModal";
 import { ConfirmDialog } from "../components/common/ConfirmDialog";
 
@@ -21,8 +26,11 @@ export function PlansPage() {
 
   const plans = useCoachPlans();
   const del = useDeletePlan();
+  const clone = useClonePlan();
+  const navigate = useNavigate();
   const [creating, setCreating] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<CoachPlan | null>(null);
+  const [cloningId, setCloningId] = useState<string | null>(null);
 
   if (profile.isLoading) {
     return (
@@ -52,6 +60,20 @@ export function PlansPage() {
       const msg = e instanceof Error ? e.message : "Unbekannter Fehler";
       toast.error(`Loeschen fehlgeschlagen: ${msg}`);
       setConfirmDelete(null);
+    }
+  }
+
+  async function handleClone(plan: CoachPlan) {
+    setCloningId(plan.id);
+    try {
+      const newId = await clone.mutateAsync(plan.id);
+      toast.success("Kopie angelegt.");
+      void navigate(`/app/plans/${newId}`);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Unbekannter Fehler";
+      toast.error(`Kopieren fehlgeschlagen: ${msg}`);
+    } finally {
+      setCloningId(null);
     }
   }
 
@@ -113,7 +135,13 @@ export function PlansPage() {
       {!plans.isLoading && !plans.error && (plans.data?.length ?? 0) > 0 && (
         <ul role="list" className="space-y-3">
           {plans.data!.map((p) => (
-            <PlanCard key={p.id} plan={p} onDelete={() => setConfirmDelete(p)} />
+            <PlanCard
+              key={p.id}
+              plan={p}
+              cloning={cloningId === p.id}
+              onDelete={() => setConfirmDelete(p)}
+              onClone={() => void handleClone(p)}
+            />
           ))}
         </ul>
       )}
@@ -139,9 +167,14 @@ export function PlansPage() {
   );
 }
 
-type PlanCardProps = { plan: CoachPlan; onDelete: () => void };
+type PlanCardProps = {
+  plan: CoachPlan;
+  cloning: boolean;
+  onDelete: () => void;
+  onClone: () => void;
+};
 
-function PlanCard({ plan, onDelete }: PlanCardProps) {
+function PlanCard({ plan, cloning, onDelete, onClone }: PlanCardProps) {
   const subtitle = plan.is_template
     ? "Template"
     : plan.athlete_name
@@ -191,19 +224,35 @@ function PlanCard({ plan, onDelete }: PlanCardProps) {
             </p>
           )}
         </Link>
-        <button
-          type="button"
-          onClick={onDelete}
-          aria-label={`Plan ${plan.title} loeschen`}
-          className="rounded-2xl px-3 py-2 text-xs"
-          style={{
-            border: "1px solid var(--line-2)",
-            color: "var(--color-accent-2)",
-            backgroundColor: "transparent",
-          }}
-        >
-          Loeschen
-        </button>
+        <div className="flex flex-col gap-1">
+          <button
+            type="button"
+            onClick={onClone}
+            disabled={cloning}
+            aria-label={`Plan ${plan.title} kopieren`}
+            className="rounded-2xl px-3 py-2 text-xs disabled:opacity-40"
+            style={{
+              border: "1px solid var(--line-2)",
+              color: "var(--color-ink-2)",
+              backgroundColor: "transparent",
+            }}
+          >
+            {cloning ? "Kopiere …" : "Kopie"}
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            aria-label={`Plan ${plan.title} loeschen`}
+            className="rounded-2xl px-3 py-2 text-xs"
+            style={{
+              border: "1px solid var(--line-2)",
+              color: "var(--color-accent-2)",
+              backgroundColor: "transparent",
+            }}
+          >
+            Loeschen
+          </button>
+        </div>
       </div>
     </li>
   );
