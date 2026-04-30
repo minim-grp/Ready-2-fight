@@ -20,6 +20,7 @@ import {
   type SessionFormState,
 } from "../components/plans/sessionForm.logic";
 import { ConfirmDialog } from "../components/common/ConfirmDialog";
+import { SessionExercisesPanel } from "../components/plans/SessionExercisesPanel";
 
 const CARD_STYLE: React.CSSProperties = {
   backgroundColor: "var(--color-paper)",
@@ -420,6 +421,7 @@ function SessionRow({
 }: SessionRowProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(session.title);
+  const [expanded, setExpanded] = useState(false);
 
   function commit() {
     setEditing(false);
@@ -520,6 +522,35 @@ function SessionRow({
           </button>
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+        aria-controls={`session-${session.id}-exercises`}
+        aria-label={
+          expanded
+            ? `Uebungen von ${session.title} verbergen`
+            : `Uebungen von ${session.title} anzeigen`
+        }
+        className="mt-3 text-xs tracking-[0.18em] uppercase"
+        style={{
+          fontFamily: "var(--font-mono)",
+          color: "var(--color-accent-2)",
+          background: "transparent",
+          border: "none",
+          padding: 0,
+          cursor: "pointer",
+        }}
+      >
+        {expanded ? "Uebungen verbergen ▴" : "Uebungen anzeigen ▾"}
+      </button>
+
+      {expanded && (
+        <div id={`session-${session.id}-exercises`}>
+          <SessionExercisesPanel sessionId={session.id} />
+        </div>
+      )}
     </li>
   );
 }
