@@ -5,6 +5,7 @@ import type {
 } from "../../hooks/queries/useDailyTracking";
 
 export type Quality = Database["public"]["Enums"]["sleep_quality"];
+export type Mood = Database["public"]["Enums"]["mood_level"];
 export type Activity = Database["public"]["Enums"]["activity_level"];
 
 export const QUALITY_OPTIONS: { value: Quality; label: string }[] = [
@@ -23,7 +24,7 @@ export const ACTIVITY_OPTIONS: { value: Activity; label: string }[] = [
 export type TrackingFormState = {
   sleep_quality: Quality | "";
   weight_kg: string;
-  mood: Quality | "";
+  mood: Mood | "";
   water_l: string;
   physical_condition: Quality | "";
   calories_kcal: string;
