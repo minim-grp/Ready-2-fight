@@ -10,6 +10,7 @@ import { CodesPage } from "./pages/CodesPage";
 import { EngagementsPage } from "./pages/EngagementsPage";
 import { CrsTestPage } from "./pages/CrsTestPage";
 import { CrsHistoryPage } from "./pages/CrsHistoryPage";
+import { PlansPage } from "./pages/PlansPage";
 import { TrackingPage } from "./pages/TrackingPage";
 import { SettingsPage } from "./pages/SettingsPage";
 
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="tracking" element={<TrackingPage />} />
           <Route path="crs/test" element={<CrsTestPage />} />
           <Route path="crs/history" element={<CrsHistoryPage />} />
+          <Route path="plans" element={<PlansPage />} />
           <Route path="engagements" element={<EngagementsPage />} />
           <Route path="athletes" element={<Navigate to="/app/engagements" replace />} />
           <Route path="codes" element={<CodesPage />} />
