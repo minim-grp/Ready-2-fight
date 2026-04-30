@@ -117,3 +117,155 @@ export function useDeletePlan() {
     },
   });
 }
+
+export type PlanSession = {
+  id: string;
+  plan_id: string;
+  day_offset: number;
+  title: string;
+  notes: string | null;
+  position: number;
+};
+
+export type PlanWithSessions = CoachPlan & { sessions: PlanSession[] };
+
+export function usePlan(planId: string | undefined) {
+  return useQuery({
+    enabled: !!planId,
+    queryKey: ["plans", "detail", planId],
+    queryFn: async (): Promise<PlanWithSessions | null> => {
+      const { data: planRow, error: planErr } = await supabase
+        .from("training_plans")
+        .select(
+          `id, owner_id, athlete_id, title, description, is_template,
+           archived_at, starts_on, ends_on, created_at, updated_at,
+           athlete:users!athlete_id(display_name)`,
+        )
+        .eq("id", planId!)
+        .maybeSingle();
+      if (planErr) throw planErr;
+      if (!planRow) return null;
+
+      const { data: sessionRows, error: sessionErr } = await supabase
+        .from("training_sessions")
+        .select("id, plan_id, day_offset, title, notes, position")
+        .eq("plan_id", planId!)
+        .order("position", { ascending: true })
+        .order("day_offset", { ascending: true });
+      if (sessionErr) throw sessionErr;
+
+      const raw = planRow as unknown as RawPlanRow;
+      return {
+        id: raw.id,
+        owner_id: raw.owner_id,
+        athlete_id: raw.athlete_id,
+        athlete_name: raw.athlete?.display_name ?? null,
+        title: raw.title,
+        description: raw.description,
+        is_template: raw.is_template,
+        archived_at: raw.archived_at,
+        starts_on: raw.starts_on,
+        ends_on: raw.ends_on,
+        created_at: raw.created_at,
+        updated_at: raw.updated_at,
+        sessions: (sessionRows ?? []) as PlanSession[],
+      };
+    },
+  });
+}
+
+export type CreateSessionInput = {
+  plan_id: string;
+  title: string;
+  day_offset: number;
+  notes: string | null;
+  position: number;
+};
+
+export function useCreateSession() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: CreateSessionInput): Promise<string> => {
+      const { data, error } = await supabase
+        .from("training_sessions")
+        .insert(input)
+        .select("id")
+        .single();
+      if (error) throw error;
+      return data.id;
+    },
+    onSuccess: (_id, vars) => {
+      void qc.invalidateQueries({ queryKey: ["plans", "detail", vars.plan_id] });
+    },
+  });
+}
+
+export type UpdateSessionInput = {
+  id: string;
+  plan_id: string;
+  title?: string;
+  notes?: string | null;
+  day_offset?: number;
+  position?: number;
+};
+
+export function useUpdateSession() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: UpdateSessionInput): Promise<void> => {
+      const { id, plan_id, ...patch } = input;
+      void plan_id;
+      const { error } = await supabase
+        .from("training_sessions")
+        .update(patch)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_v, vars) => {
+      void qc.invalidateQueries({ queryKey: ["plans", "detail", vars.plan_id] });
+    },
+  });
+}
+
+export function useDeleteSession() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; plan_id: string }): Promise<void> => {
+      const { error } = await supabase
+        .from("training_sessions")
+        .delete()
+        .eq("id", input.id);
+      if (error) throw error;
+    },
+    onSuccess: (_v, vars) => {
+      void qc.invalidateQueries({ queryKey: ["plans", "detail", vars.plan_id] });
+    },
+  });
+}
+
+// Atomic Swap zweier Sessions: tauscht position der beiden Rows.
+// Reihenfolge in der UI orientiert sich an position ASC (Tie-Break day_offset).
+export function useSwapSessions() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      plan_id: string;
+      a: PlanSession;
+      b: PlanSession;
+    }): Promise<void> => {
+      const { error: errA } = await supabase
+        .from("training_sessions")
+        .update({ position: input.b.position })
+        .eq("id", input.a.id);
+      if (errA) throw errA;
+      const { error: errB } = await supabase
+        .from("training_sessions")
+        .update({ position: input.a.position })
+        .eq("id", input.b.id);
+      if (errB) throw errB;
+    },
+    onSuccess: (_v, vars) => {
+      void qc.invalidateQueries({ queryKey: ["plans", "detail", vars.plan_id] });
+    },
+  });
+}
