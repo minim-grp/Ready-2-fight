@@ -1488,7 +1488,7 @@ export type Database = {
       activity_level: "keine" | "moderat" | "hoch" | "extrem";
       gender: "male" | "female" | "diverse" | "prefer_not_to_say";
       language: "de" | "en";
-      mood_level: "gut" | "mittel" | "schlecht";
+      mood_level: "sehr_schlecht" | "schlecht" | "mittel" | "gut" | "sehr_gut";
       physical_condition: "gut" | "mittel" | "schlecht";
       sleep_quality: "gut" | "mittel" | "schlecht";
       user_role: "athlete" | "coach" | "both";
@@ -1623,7 +1623,7 @@ export const Constants = {
       activity_level: ["keine", "moderat", "hoch", "extrem"],
       gender: ["male", "female", "diverse", "prefer_not_to_say"],
       language: ["de", "en"],
-      mood_level: ["gut", "mittel", "schlecht"],
+      mood_level: ["sehr_schlecht", "schlecht", "mittel", "gut", "sehr_gut"],
       physical_condition: ["gut", "mittel", "schlecht"],
       sleep_quality: ["gut", "mittel", "schlecht"],
       user_role: ["athlete", "coach", "both"],

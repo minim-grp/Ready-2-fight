@@ -1,10 +1,10 @@
-import type { Quality } from "./trackingForm.logic";
+import type { Mood } from "./trackingForm.logic";
 
-type MoodOption = { value: Quality; emoji: string; label: string };
+type MoodOption = { value: Mood; emoji: string; label: string };
 
-// ASSUMPTION: Backend-Enum sleep_quality hat 3 Werte (gut/mittel/schlecht).
-// Hi-fi-Mock zeigt 5-Phasen-Mond — pragmatisch auf 3 Emojis reduziert,
-// bis Migration ein erweitertes mood-Enum bringt (Followup).
+// ASSUMPTION: DB-Enum mood_level hat seit PR #38 fuenf Werte. Diese
+// Komponente nutzt vorerst weiter drei Stufen — der 5-Phasen-Mond-Strip
+// 🌑→🌕 kommt im UI-Followup-PR.
 const MOODS: MoodOption[] = [
   { value: "schlecht", emoji: "😞", label: "Schlecht" },
   { value: "mittel", emoji: "😐", label: "Neutral" },
@@ -13,8 +13,8 @@ const MOODS: MoodOption[] = [
 
 type Props = {
   label: string;
-  value: Quality | "";
-  onChange: (v: Quality) => void;
+  value: Mood | "";
+  onChange: (v: Mood) => void;
   required?: boolean;
 };
 
