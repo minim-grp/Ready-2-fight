@@ -1,7 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render as rtlRender, screen, fireEvent, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { EngagementsList } from "./EngagementsList";
 import type { EngagementRow } from "../../hooks/queries/useEngagements";
+
+// MemoryRouter-Wrapper noetig, weil EngagementsList fuer Coach-Sicht
+// einen <Link> auf /app/athletes/:athleteId/competitions enthaelt (§1.26b).
+function render(ui: React.ReactElement) {
+  return rtlRender(<MemoryRouter>{ui}</MemoryRouter>);
+}
 
 type QueryState = {
   data: EngagementRow[] | undefined;
