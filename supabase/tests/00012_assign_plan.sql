@@ -116,26 +116,32 @@ BEGIN
   VALUES (v_other_plan, 'aaaa2222-2222-2222-2222-aaaaaaaaaaaa'::UUID, NULL,
           'Krafttraining', true);
 
-  -- Aktives Engagement CoachA <-> Athlet1 mit can_create_plans=true
+  -- Engagements werden vom validate_engagement_insert-Trigger immer
+  -- auf 'pending' gesetzt; Status-Wechsel danach via UPDATE (ohne
+  -- auth.uid() greift validate_engagement_update nicht).
   INSERT INTO public.coach_athlete_engagements
-    (id, coach_id, athlete_id, status, can_create_plans, started_at)
+    (id, coach_id, athlete_id, can_create_plans, started_at)
   VALUES
     (v_eng_ok, 'aaaa1111-1111-1111-1111-aaaaaaaaaaaa'::UUID,
-     'aaaa3333-3333-3333-3333-aaaaaaaaaaaa'::UUID, 'active', true, now());
+     'aaaa3333-3333-3333-3333-aaaaaaaaaaaa'::UUID, true, now());
+  UPDATE public.coach_athlete_engagements SET status = 'active' WHERE id = v_eng_ok;
 
   -- Pausiertes Engagement (anderer purpose, wegen unique-Index)
   INSERT INTO public.coach_athlete_engagements
-    (id, coach_id, athlete_id, purpose, status, can_create_plans, started_at)
+    (id, coach_id, athlete_id, purpose, can_create_plans, started_at)
   VALUES
     (v_eng_paused, 'aaaa1111-1111-1111-1111-aaaaaaaaaaaa'::UUID,
-     'aaaa3333-3333-3333-3333-aaaaaaaaaaaa'::UUID, 'technique', 'paused', true, now());
+     'aaaa3333-3333-3333-3333-aaaaaaaaaaaa'::UUID, 'technique', true, now());
+  UPDATE public.coach_athlete_engagements SET status = 'active' WHERE id = v_eng_paused;
+  UPDATE public.coach_athlete_engagements SET status = 'paused' WHERE id = v_eng_paused;
 
   -- Aktiv aber can_create_plans=false (CoachB <-> Athlet1)
   INSERT INTO public.coach_athlete_engagements
-    (id, coach_id, athlete_id, status, can_create_plans, started_at)
+    (id, coach_id, athlete_id, can_create_plans, started_at)
   VALUES
     (v_eng_noperm, 'aaaa2222-2222-2222-2222-aaaaaaaaaaaa'::UUID,
-     'aaaa3333-3333-3333-3333-aaaaaaaaaaaa'::UUID, 'active', false, now());
+     'aaaa3333-3333-3333-3333-aaaaaaaaaaaa'::UUID, false, now());
+  UPDATE public.coach_athlete_engagements SET status = 'active' WHERE id = v_eng_noperm;
 END $$;
 
 
