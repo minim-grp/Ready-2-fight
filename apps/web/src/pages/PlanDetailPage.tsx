@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useProfile } from "../hooks/queries/useProfile";
 import { useModeStore } from "../stores/mode";
 import {
+  useArchivePlan,
   useCreateSession,
   useDeleteSession,
   usePlan,
@@ -50,6 +51,7 @@ export function PlanDetailPage() {
   const update = useUpdateSession();
   const del = useDeleteSession();
   const swap = useSwapSessions();
+  const archive = useArchivePlan();
 
   const [adding, setAdding] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<PlanSession | null>(null);
@@ -146,6 +148,19 @@ export function PlanDetailPage() {
     }
   }
 
+  async function handleArchiveToggle() {
+    const willArchive = planRow.archived_at === null;
+    try {
+      await archive.mutateAsync({ plan_id: planRow.id, archive: willArchive });
+      toast.success(willArchive ? "Plan archiviert." : "Plan wiederhergestellt.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Unbekannter Fehler";
+      toast.error(
+        `${willArchive ? "Archivieren" : "Wiederherstellen"} fehlgeschlagen: ${msg}`,
+      );
+    }
+  }
+
   async function handleDelete() {
     if (!confirmDelete) return;
     try {
@@ -187,6 +202,40 @@ export function PlanDetailPage() {
             {planRow.description}
           </p>
         )}
+        <div className="flex items-center gap-3 pt-2">
+          {planRow.archived_at !== null && (
+            <span
+              role="status"
+              className="rounded-full px-3 py-1 text-xs"
+              style={{
+                border: "1px solid var(--line-2)",
+                color: "var(--color-ink-2)",
+                backgroundColor: "var(--color-paper-elev)",
+              }}
+            >
+              Archiviert
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={() => void handleArchiveToggle()}
+            disabled={archive.isPending}
+            className="rounded-2xl px-3 py-2 text-xs disabled:opacity-40"
+            style={{
+              border: "1px solid var(--line-2)",
+              color: "var(--color-ink-2)",
+              backgroundColor: "transparent",
+            }}
+          >
+            {archive.isPending
+              ? planRow.archived_at !== null
+                ? "Stelle her …"
+                : "Archiviere …"
+              : planRow.archived_at !== null
+                ? "Wiederherstellen"
+                : "Archivieren"}
+          </button>
+        </div>
       </header>
 
       <div className="flex items-center justify-between">
