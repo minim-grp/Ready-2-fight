@@ -122,6 +122,28 @@ export function useClonePlan() {
   });
 }
 
+// Archivieren / Wiederherstellen via UPDATE auf training_plans.archived_at.
+// RLS tp_owner_all erlaubt Owner-only Updates; kein RPC noetig.
+export function useArchivePlan() {
+  const qc = useQueryClient();
+  const userId = useAuthStore((s) => s.user?.id);
+  return useMutation({
+    mutationFn: async (input: { plan_id: string; archive: boolean }): Promise<void> => {
+      const { error } = await supabase
+        .from("training_plans")
+        .update({
+          archived_at: input.archive ? new Date().toISOString() : null,
+        })
+        .eq("id", input.plan_id);
+      if (error) throw error;
+    },
+    onSuccess: (_v, vars) => {
+      void qc.invalidateQueries({ queryKey: ["plans", "coach", userId] });
+      void qc.invalidateQueries({ queryKey: ["plans", "detail", vars.plan_id] });
+    },
+  });
+}
+
 export function useDeletePlan() {
   const qc = useQueryClient();
   const userId = useAuthStore((s) => s.user?.id);

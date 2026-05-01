@@ -31,6 +31,9 @@ const deleteState: { value: MutationState } = {
 const cloneState: { value: MutationState } = {
   value: { mutateAsync: vi.fn().mockResolvedValue("p-clone"), isPending: false },
 };
+const archiveState: { value: MutationState } = {
+  value: { mutateAsync: vi.fn().mockResolvedValue(undefined), isPending: false },
+};
 
 vi.mock("../hooks/queries/useProfile", () => ({
   useProfile: () => profileState.value,
@@ -43,6 +46,7 @@ vi.mock("../hooks/queries/usePlans", () => ({
   useCreatePlan: () => createState.value,
   useDeletePlan: () => deleteState.value,
   useClonePlan: () => cloneState.value,
+  useArchivePlan: () => archiveState.value,
 }));
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
@@ -68,6 +72,10 @@ describe("PlansPage", () => {
     };
     cloneState.value = {
       mutateAsync: vi.fn().mockResolvedValue("p-clone"),
+      isPending: false,
+    };
+    archiveState.value = {
+      mutateAsync: vi.fn().mockResolvedValue(undefined),
       isPending: false,
     };
   });
@@ -213,6 +221,118 @@ describe("PlansPage", () => {
     renderPage();
     fireEvent.click(screen.getByRole("button", { name: /Plan Boxen 4 Wochen kopieren/ }));
     await waitFor(() => expect(cloneState.value.mutateAsync).toHaveBeenCalledWith("p1"));
+  });
+
+  it("filtert archivierte Plaene per Default und zeigt Toggle bei archivierten Eintraegen", () => {
+    plansState.value = {
+      data: [
+        {
+          id: "p1",
+          owner_id: "c1",
+          athlete_id: null,
+          athlete_name: null,
+          title: "Aktiver Plan",
+          description: null,
+          is_template: true,
+          archived_at: null,
+          starts_on: null,
+          ends_on: null,
+          created_at: "2026-04-30T00:00:00Z",
+          updated_at: "2026-04-30T00:00:00Z",
+        },
+        {
+          id: "p2",
+          owner_id: "c1",
+          athlete_id: null,
+          athlete_name: null,
+          title: "Alter Plan",
+          description: null,
+          is_template: true,
+          archived_at: "2026-04-29T00:00:00Z",
+          starts_on: null,
+          ends_on: null,
+          created_at: "2026-04-29T00:00:00Z",
+          updated_at: "2026-04-29T00:00:00Z",
+        },
+      ],
+      isLoading: false,
+      error: null,
+    };
+    renderPage();
+    expect(screen.getByText("Aktiver Plan")).toBeInTheDocument();
+    expect(screen.queryByText("Alter Plan")).toBeNull();
+
+    const toggle = screen.getByLabelText(/Archivierte anzeigen/);
+    fireEvent.click(toggle);
+    expect(screen.getByText("Alter Plan")).toBeInTheDocument();
+    expect(screen.getAllByText(/Archiviert/)[0]).toBeInTheDocument();
+  });
+
+  it("Archivieren-Button ruft mutateAsync mit archive=true", async () => {
+    plansState.value = {
+      data: [
+        {
+          id: "p1",
+          owner_id: "c1",
+          athlete_id: null,
+          athlete_name: null,
+          title: "Aktiver Plan",
+          description: null,
+          is_template: true,
+          archived_at: null,
+          starts_on: null,
+          ends_on: null,
+          created_at: "2026-04-30T00:00:00Z",
+          updated_at: "2026-04-30T00:00:00Z",
+        },
+      ],
+      isLoading: false,
+      error: null,
+    };
+    renderPage();
+    fireEvent.click(
+      screen.getByRole("button", { name: /Plan Aktiver Plan archivieren/ }),
+    );
+    await waitFor(() =>
+      expect(archiveState.value.mutateAsync).toHaveBeenCalledWith({
+        plan_id: "p1",
+        archive: true,
+      }),
+    );
+  });
+
+  it("Wiederherstellen-Button ruft mutateAsync mit archive=false", async () => {
+    plansState.value = {
+      data: [
+        {
+          id: "p1",
+          owner_id: "c1",
+          athlete_id: null,
+          athlete_name: null,
+          title: "Alter Plan",
+          description: null,
+          is_template: true,
+          archived_at: "2026-04-29T00:00:00Z",
+          starts_on: null,
+          ends_on: null,
+          created_at: "2026-04-29T00:00:00Z",
+          updated_at: "2026-04-29T00:00:00Z",
+        },
+      ],
+      isLoading: false,
+      error: null,
+    };
+    renderPage();
+    fireEvent.click(screen.getByLabelText(/Archivierte anzeigen/));
+    fireEvent.click(
+      screen.getByRole("button", { name: /Plan Alter Plan wiederherstellen/ }),
+    );
+    await waitFor(() =>
+      expect(archiveState.value.mutateAsync).toHaveBeenCalledWith({
+        plan_id: "p1",
+        archive: false,
+      }),
+    );
   });
 
   it("redirected wenn nicht Coach-View", () => {

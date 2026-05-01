@@ -34,6 +34,9 @@ const deleteState: { value: MutationState } = {
 const swapState: { value: MutationState } = {
   value: { mutateAsync: vi.fn().mockResolvedValue(undefined), isPending: false },
 };
+const archiveState: { value: MutationState } = {
+  value: { mutateAsync: vi.fn().mockResolvedValue(undefined), isPending: false },
+};
 
 vi.mock("../hooks/queries/useProfile", () => ({
   useProfile: () => profileState.value,
@@ -47,6 +50,7 @@ vi.mock("../hooks/queries/usePlans", () => ({
   useUpdateSession: () => updateState.value,
   useDeleteSession: () => deleteState.value,
   useSwapSessions: () => swapState.value,
+  useArchivePlan: () => archiveState.value,
 }));
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
@@ -102,6 +106,10 @@ describe("PlanDetailPage", () => {
       isPending: false,
     };
     swapState.value = {
+      mutateAsync: vi.fn().mockResolvedValue(undefined),
+      isPending: false,
+    };
+    archiveState.value = {
       mutateAsync: vi.fn().mockResolvedValue(undefined),
       isPending: false,
     };
@@ -210,6 +218,35 @@ describe("PlanDetailPage", () => {
     fireEvent.change(input, { target: { value: "Aufgabe" } });
     fireEvent.keyDown(input, { key: "Escape" });
     expect(updateState.value.mutateAsync).not.toHaveBeenCalled();
+  });
+
+  it("Archivieren-Button ruft mutateAsync mit archive=true", async () => {
+    planState.value = { data: planWith(1), isLoading: false, error: null };
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: /^Archivieren$/ }));
+    await waitFor(() =>
+      expect(archiveState.value.mutateAsync).toHaveBeenCalledWith({
+        plan_id: "p1",
+        archive: true,
+      }),
+    );
+  });
+
+  it("zeigt Archiviert-Badge + Wiederherstellen-Button bei archived_at", async () => {
+    planState.value = {
+      data: { ...planWith(1), archived_at: "2026-04-29T00:00:00Z" },
+      isLoading: false,
+      error: null,
+    };
+    renderPage();
+    expect(screen.getByText("Archiviert")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /^Wiederherstellen$/ }));
+    await waitFor(() =>
+      expect(archiveState.value.mutateAsync).toHaveBeenCalledWith({
+        plan_id: "p1",
+        archive: false,
+      }),
+    );
   });
 
   it("Plan-not-found zeigt Hinweis + Zurueck-Link", () => {

@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useProfile } from "../hooks/queries/useProfile";
 import { useModeStore } from "../stores/mode";
 import {
+  useArchivePlan,
   useClonePlan,
   useCoachPlans,
   useDeletePlan,
@@ -27,10 +28,13 @@ export function PlansPage() {
   const plans = useCoachPlans();
   const del = useDeletePlan();
   const clone = useClonePlan();
+  const archive = useArchivePlan();
   const navigate = useNavigate();
   const [creating, setCreating] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<CoachPlan | null>(null);
   const [cloningId, setCloningId] = useState<string | null>(null);
+  const [archivingId, setArchivingId] = useState<string | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
 
   if (profile.isLoading) {
     return (
@@ -60,6 +64,22 @@ export function PlansPage() {
       const msg = e instanceof Error ? e.message : "Unbekannter Fehler";
       toast.error(`Loeschen fehlgeschlagen: ${msg}`);
       setConfirmDelete(null);
+    }
+  }
+
+  async function handleArchive(plan: CoachPlan) {
+    setArchivingId(plan.id);
+    const willArchive = plan.archived_at === null;
+    try {
+      await archive.mutateAsync({ plan_id: plan.id, archive: willArchive });
+      toast.success(willArchive ? "Plan archiviert." : "Plan wiederhergestellt.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Unbekannter Fehler";
+      toast.error(
+        `${willArchive ? "Archivieren" : "Wiederherstellen"} fehlgeschlagen: ${msg}`,
+      );
+    } finally {
+      setArchivingId(null);
     }
   }
 
@@ -123,28 +143,54 @@ export function PlansPage() {
         </p>
       )}
 
-      {!plans.isLoading && !plans.error && (plans.data?.length ?? 0) === 0 && (
-        <div className="rounded-[22px] p-6" style={CARD_STYLE}>
-          <p className="text-sm" style={{ color: "var(--color-ink-2)" }}>
-            Noch kein Plan angelegt. Starte mit einem Template, das du spaeter zuweist —
-            oder erstelle direkt einen Plan fuer einen Athleten.
-          </p>
-        </div>
-      )}
-
-      {!plans.isLoading && !plans.error && (plans.data?.length ?? 0) > 0 && (
-        <ul role="list" className="space-y-3">
-          {plans.data!.map((p) => (
-            <PlanCard
-              key={p.id}
-              plan={p}
-              cloning={cloningId === p.id}
-              onDelete={() => setConfirmDelete(p)}
-              onClone={() => void handleClone(p)}
-            />
-          ))}
-        </ul>
-      )}
+      {!plans.isLoading &&
+        !plans.error &&
+        (() => {
+          const all = plans.data ?? [];
+          const visible = showArchived ? all : all.filter((p) => p.archived_at === null);
+          const archivedCount = all.filter((p) => p.archived_at !== null).length;
+          return (
+            <>
+              {archivedCount > 0 && (
+                <label
+                  className="flex items-center gap-2 text-sm"
+                  style={{ color: "var(--color-ink-2)" }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={showArchived}
+                    onChange={(e) => setShowArchived(e.target.checked)}
+                  />
+                  Archivierte anzeigen ({archivedCount})
+                </label>
+              )}
+              {visible.length === 0 && (
+                <div className="rounded-[22px] p-6" style={CARD_STYLE}>
+                  <p className="text-sm" style={{ color: "var(--color-ink-2)" }}>
+                    {all.length === 0
+                      ? "Noch kein Plan angelegt. Starte mit einem Template, das du spaeter zuweist — oder erstelle direkt einen Plan fuer einen Athleten."
+                      : "Keine aktiven Plaene. Aktiviere die Archivansicht oben, um archivierte Plaene zu sehen."}
+                  </p>
+                </div>
+              )}
+              {visible.length > 0 && (
+                <ul role="list" className="space-y-3">
+                  {visible.map((p) => (
+                    <PlanCard
+                      key={p.id}
+                      plan={p}
+                      cloning={cloningId === p.id}
+                      archiving={archivingId === p.id}
+                      onDelete={() => setConfirmDelete(p)}
+                      onClone={() => void handleClone(p)}
+                      onArchive={() => void handleArchive(p)}
+                    />
+                  ))}
+                </ul>
+              )}
+            </>
+          );
+        })()}
 
       {creating && <CreatePlanModal onClose={() => setCreating(false)} />}
 
@@ -170,11 +216,21 @@ export function PlansPage() {
 type PlanCardProps = {
   plan: CoachPlan;
   cloning: boolean;
+  archiving: boolean;
   onDelete: () => void;
   onClone: () => void;
+  onArchive: () => void;
 };
 
-function PlanCard({ plan, cloning, onDelete, onClone }: PlanCardProps) {
+function PlanCard({
+  plan,
+  cloning,
+  archiving,
+  onDelete,
+  onClone,
+  onArchive,
+}: PlanCardProps) {
+  const isArchived = plan.archived_at !== null;
   const subtitle = plan.is_template
     ? "Template"
     : plan.athlete_name
@@ -186,7 +242,10 @@ function PlanCard({ plan, cloning, onDelete, onClone }: PlanCardProps) {
       : null;
 
   return (
-    <li className="rounded-[22px] p-5" style={CARD_STYLE}>
+    <li
+      className="rounded-[22px] p-5"
+      style={{ ...CARD_STYLE, opacity: isArchived ? 0.6 : 1 }}
+    >
       <div className="flex items-start justify-between gap-3">
         <Link
           to={`/app/plans/${plan.id}`}
@@ -197,7 +256,7 @@ function PlanCard({ plan, cloning, onDelete, onClone }: PlanCardProps) {
             className="text-xs tracking-[0.18em] uppercase"
             style={{ fontFamily: "var(--font-mono)", color: "var(--color-ink-3)" }}
           >
-            {subtitle}
+            {isArchived ? `${subtitle} · Archiviert` : subtitle}
           </p>
           <h2
             className="mt-1 truncate"
@@ -238,6 +297,30 @@ function PlanCard({ plan, cloning, onDelete, onClone }: PlanCardProps) {
             }}
           >
             {cloning ? "Kopiere …" : "Kopie"}
+          </button>
+          <button
+            type="button"
+            onClick={onArchive}
+            disabled={archiving}
+            aria-label={
+              isArchived
+                ? `Plan ${plan.title} wiederherstellen`
+                : `Plan ${plan.title} archivieren`
+            }
+            className="rounded-2xl px-3 py-2 text-xs disabled:opacity-40"
+            style={{
+              border: "1px solid var(--line-2)",
+              color: "var(--color-ink-2)",
+              backgroundColor: "transparent",
+            }}
+          >
+            {archiving
+              ? isArchived
+                ? "Stelle her …"
+                : "Archiviere …"
+              : isArchived
+                ? "Wiederherstellen"
+                : "Archivieren"}
           </button>
           <button
             type="button"
