@@ -41,6 +41,33 @@ export function LoginPage() {
 
     if (error) {
       logger.warn("signIn failed", error.message);
+      const isUnconfirmed =
+        // Supabase JS v2: error.code; Fallback: message-Match fuer aeltere Builds
+        (error as { code?: string }).code === "email_not_confirmed" ||
+        error.message.toLowerCase().includes("email not confirmed");
+      if (isUnconfirmed) {
+        toast.error("E-Mail noch nicht bestaetigt", {
+          description: "Bitte oeffne den Bestaetigungslink in deinem Postfach.",
+          action: {
+            label: "Erneut senden",
+            onClick: () => {
+              void supabase.auth
+                .resend({ type: "signup", email: email.trim() })
+                .then(({ error: resendError }) => {
+                  if (resendError) {
+                    logger.warn("resend failed", resendError.message);
+                    toast.error("Senden fehlgeschlagen", {
+                      description: "Bitte spaeter erneut versuchen.",
+                    });
+                    return;
+                  }
+                  toast.success("Bestaetigungs-Mail versendet");
+                });
+            },
+          },
+        });
+        return;
+      }
       toast.error("Login fehlgeschlagen", {
         description: "E-Mail oder Passwort ist falsch.",
       });
