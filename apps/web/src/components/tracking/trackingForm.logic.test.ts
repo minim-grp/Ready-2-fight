@@ -122,6 +122,7 @@ describe("hydrateTrackingForm", () => {
       notes: null,
       engagement_id: null,
       client_uuid: null,
+      tracked_at: "2026-04-18T08:00:00Z",
       created_at: "2026-04-18T00:00:00Z",
       updated_at: "2026-04-18T00:00:00Z",
     };
