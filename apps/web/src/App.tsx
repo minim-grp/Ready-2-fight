@@ -13,6 +13,7 @@ import { CrsHistoryPage } from "./pages/CrsHistoryPage";
 import { PlansPage } from "./pages/PlansPage";
 import { PlanDetailPage } from "./pages/PlanDetailPage";
 import { TrackingPage } from "./pages/TrackingPage";
+import { CoachAthleteDetailPage } from "./pages/CoachAthleteDetailPage";
 import { SettingsPage } from "./pages/SettingsPage";
 
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="plans/:id" element={<PlanDetailPage />} />
           <Route path="engagements" element={<EngagementsPage />} />
           <Route path="athletes" element={<Navigate to="/app/engagements" replace />} />
+          <Route path="athletes/:athleteId" element={<CoachAthleteDetailPage />} />
           <Route path="codes" element={<CodesPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>

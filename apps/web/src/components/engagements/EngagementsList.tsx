@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuthStore } from "../../stores/auth";
 import { useEngagements, type EngagementRow } from "../../hooks/queries/useEngagements";
 import {
@@ -234,6 +235,19 @@ function EngagementRowView({
           granted={grantedPermissions}
           engagementId={row.id}
         />
+      )}
+
+      {isCoach && row.status === "active" && (
+        <Link
+          to={`/app/athletes/${row.athlete_id}`}
+          className="mt-3 inline-block text-xs"
+          style={{
+            color: "var(--color-accent)",
+            textDecoration: "underline",
+          }}
+        >
+          Athleten-Details ansehen →
+        </Link>
       )}
 
       {row.status !== "ended" && (
