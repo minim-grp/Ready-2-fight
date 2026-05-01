@@ -9,12 +9,12 @@
 -- 5) Mehrere INSERTs (verschiedene Sessions) addieren XP
 -- 6) Bei Schwellenuebertritt (Level 1 -> Level 2 = 100 XP) wird
 --    eine 'level_up'-Notification erzeugt
--- 7) Service-Role-INSERT (auth.uid() IS NULL) faellt auf NEW.athlete_id zurueck
+-- 7) Service-Role-INSERT (auth.uid() IS NULL) — Trigger nimmt NEW.athlete_id
 -- ============================================================
 
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap;
-SELECT plan(8);
+SELECT plan(9);
 
 CREATE SCHEMA IF NOT EXISTS tests;
 
@@ -199,7 +199,7 @@ VALUES ('cccc0023-0023-0023-0023-cccccccc1111'::UUID,
 SELECT is(
   (SELECT xp_total FROM public.users WHERE id = 'aaaa4444-4444-4444-4444-aaaaaaaa0023'::UUID),
   30,
-  'Service-Role-INSERT (kein JWT) faellt auf NEW.athlete_id zurueck'
+  'Service-Role-INSERT (kein JWT) vergibt XP via NEW.athlete_id'
 );
 
 

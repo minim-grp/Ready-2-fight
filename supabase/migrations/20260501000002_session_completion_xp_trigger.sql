@@ -4,8 +4,10 @@
 -- AFTER INSERT auf public.session_completions: vergibt XP an den
 -- Athleten ueber die in xp_rules vordefinierte Action 'session_completed'
 -- (30 XP). Trigger dupliziert die Inline-XP-Logik aus grant_xp() (Migration 2),
--- weil grant_xp() auf auth.uid() angewiesen ist und im Trigger-Kontext der
--- Service-Role-INSERT auch funktionieren muss (Fallback NEW.athlete_id).
+-- weil grant_xp() auf auth.uid() angewiesen ist; der Trigger nimmt direkt
+-- NEW.athlete_id — RLS "Athletes manage own completions" garantiert, dass
+-- der INSERT nur fuer eigene athlete_id durchgeht, und Service-Role-INSERTs
+-- (z.B. zukuenftige Cron-Jobs) funktionieren ebenfalls.
 --
 -- Idempotenz: der UNIQUE(session_id, athlete_id)-Constraint auf
 -- session_completions verhindert doppelte Eintraege und damit Doppel-XP.
@@ -17,7 +19,7 @@
 CREATE OR REPLACE FUNCTION public.on_session_completion_grant_xp()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 DECLARE
-  v_user_id   UUID := COALESCE(auth.uid(), NEW.athlete_id);
+  v_user_id   UUID := NEW.athlete_id;
   v_xp_amount INT;
   v_old_level INT;
   v_new_xp    INT;
