@@ -58,6 +58,7 @@ function buildOptimisticRow(
     id: existing?.id ?? crypto.randomUUID(),
     athlete_id: row.athlete_id,
     date: row.date,
+    tracked_at: existing?.tracked_at ?? now,
     sleep_quality: row.sleep_quality ?? null,
     weight_kg: row.weight_kg ?? null,
     mood: row.mood ?? null,
