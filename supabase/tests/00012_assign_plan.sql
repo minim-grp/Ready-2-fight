@@ -92,8 +92,10 @@ DECLARE
   v_eng_noperm UUID := 'dddd3333-3333-3333-3333-dddddddddddd'::UUID;
 BEGIN
   -- Athlete-Profile (training_plans.athlete_id -> athlete_profiles.id)
+  -- on_auth_user_created-Trigger legt es bei role='athlete' bereits an
   INSERT INTO public.athlete_profiles (id) VALUES
-    ('aaaa3333-3333-3333-3333-aaaaaaaaaaaa'::UUID);
+    ('aaaa3333-3333-3333-3333-aaaaaaaaaaaa'::UUID)
+  ON CONFLICT (id) DO NOTHING;
 
   -- CoachA-Template + 2 Sessions + 3 Exercises
   INSERT INTO public.training_plans (id, owner_id, athlete_id, title, description, is_template)
