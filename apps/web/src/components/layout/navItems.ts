@@ -7,6 +7,7 @@ export type NavItem = { to: string; label: string };
 const ATHLETE_ITEMS: NavItem[] = [
   { to: "/app/dashboard", label: "Heute" },
   { to: "/app/tracking", label: "Tracking" },
+  { to: "/app/plan", label: "Plan" },
   { to: "/app/engagements", label: "Coaches" },
   { to: "/app/settings", label: "Profil" },
 ];
