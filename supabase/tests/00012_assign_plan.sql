@@ -224,14 +224,17 @@ SELECT is(
 -- ############################################################
 
 DO $$
-DECLARE v_visible BOOLEAN;
+DECLARE
+  v_visible    BOOLEAN;
+  v_assigned_id UUID;
 BEGIN
+  SELECT id INTO v_assigned_id FROM _assigned;
   EXECUTE 'SET LOCAL ROLE authenticated';
   EXECUTE format('SET LOCAL "request.jwt.claims" = %L',
     json_build_object('sub', 'aaaa3333-3333-3333-3333-aaaaaaaaaaaa',
                       'role', 'authenticated')::text);
   SELECT EXISTS (
-    SELECT 1 FROM public.training_plans WHERE id = (SELECT id FROM _assigned)
+    SELECT 1 FROM public.training_plans WHERE id = v_assigned_id
   ) INTO v_visible;
   EXECUTE 'RESET ROLE';
 
