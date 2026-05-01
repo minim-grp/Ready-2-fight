@@ -25,7 +25,7 @@
 
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap;
-SELECT plan(6);
+SELECT plan(7);
 
 CREATE SCHEMA IF NOT EXISTS tests;
 
@@ -48,16 +48,20 @@ BEGIN
   RETURN p_id;
 END $$;
 
--- Helper: Tracking-Row mit frei waehlbarem created_at einfuegen.
+-- Helper: Tracking-Row mit frei waehlbarem Karenz-Anker einfuegen.
 -- Umgeht RLS (SECURITY DEFINER); AFTER-INSERT-Trigger feuert trotzdem.
+-- Setzt sowohl created_at als auch tracked_at = p_created, weil der
+-- Trigger seit Migration 20260501000003 NEW.tracked_at liest.
 CREATE OR REPLACE FUNCTION tests.insert_tracking(
   p_athlete UUID,
   p_date    DATE,
   p_created TIMESTAMPTZ
 ) RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
 BEGIN
-  INSERT INTO public.daily_tracking (athlete_id, date, mood, physical_condition, trained, created_at)
-  VALUES (p_athlete, p_date, 'gut', 'gut', false, p_created);
+  INSERT INTO public.daily_tracking
+    (athlete_id, date, mood, physical_condition, trained, created_at, tracked_at)
+  VALUES
+    (p_athlete, p_date, 'gut', 'gut', false, p_created, p_created);
 END $$;
 
 -- Helper: Streak + daily_tracking fuer den Test-User zuruecksetzen.
@@ -195,6 +199,32 @@ SELECT is(
     WHERE user_id = '22222222-2222-2222-2222-222222222222'),
   3,
   'K07 longest_streak wird beim Reset nicht zurueckgesetzt');
+
+-- ============================================================
+-- K08  Karenz-Anker = tracked_at (nicht created_at)
+--      Offline-Sync-Szenario: Athlet trackt am 2026-03-03 12:00 (in Karenz),
+--      Sync passiert erst spaeter am 2026-03-10 → created_at='2026-03-10'.
+--      Trigger soll trotzdem +1 vergeben, weil tracked_at innerhalb 48h liegt.
+-- ============================================================
+SELECT tests.reset_streak_state('22222222-2222-2222-2222-222222222222');
+
+SELECT tests.insert_tracking(
+  '22222222-2222-2222-2222-222222222222', '2026-03-01',
+  '2026-03-01 20:00:00+00'::timestamptz);
+
+-- Direct-Insert mit divergenten created_at / tracked_at — simulates Offline-Sync
+INSERT INTO public.daily_tracking
+  (athlete_id, date, mood, physical_condition, trained, created_at, tracked_at)
+VALUES
+  ('22222222-2222-2222-2222-222222222222'::uuid, '2026-03-03', 'gut', 'gut', false,
+   '2026-03-10 09:00:00+00'::timestamptz,   -- created_at: weit ausserhalb Karenz
+   '2026-03-03 12:00:00+00'::timestamptz);  -- tracked_at: innerhalb 48h-Fenster
+
+SELECT is(
+  (SELECT current_streak FROM public.streaks
+    WHERE user_id = '22222222-2222-2222-2222-222222222222'),
+  2,
+  'K08 Karenz-Anker = tracked_at (Offline-Sync-Szenario, +1 trotz spaetem created_at)');
 
 SELECT * FROM finish();
 ROLLBACK;
