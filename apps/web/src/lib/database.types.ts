@@ -526,6 +526,7 @@ export type Database = {
           soreness: boolean;
           soreness_region: string | null;
           srpe: number | null;
+          tracked_at: string;
           trained: boolean;
           updated_at: string;
           water_l: number | null;
@@ -549,6 +550,7 @@ export type Database = {
           soreness?: boolean;
           soreness_region?: string | null;
           srpe?: number | null;
+          tracked_at?: string;
           trained?: boolean;
           updated_at?: string;
           water_l?: number | null;
@@ -572,6 +574,7 @@ export type Database = {
           soreness?: boolean;
           soreness_region?: string | null;
           srpe?: number | null;
+          tracked_at?: string;
           trained?: boolean;
           updated_at?: string;
           water_l?: number | null;
@@ -1370,6 +1373,14 @@ export type Database = {
     };
     Functions: {
       abort_crs_test: { Args: { p_test_id: string }; Returns: undefined };
+      assign_plan: {
+        Args: {
+          p_athlete_id: string;
+          p_engagement_id: string;
+          p_template_id: string;
+        };
+        Returns: string;
+      };
       can_coach_see_competition: {
         Args: { p_competition_id: string };
         Returns: boolean;
