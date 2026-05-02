@@ -1479,6 +1479,7 @@ export type Database = {
         Returns: boolean;
       };
       is_self: { Args: { target_user: string }; Returns: boolean };
+      mark_messages_read: { Args: { p_channel_id: string }; Returns: number };
       notify_data_expiry: { Args: never; Returns: undefined };
       own_athlete_profile_id: { Args: never; Returns: string };
       pause_engagement: { Args: { p_engagement_id: string }; Returns: string };

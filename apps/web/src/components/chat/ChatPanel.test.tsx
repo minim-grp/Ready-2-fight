@@ -20,9 +20,14 @@ const sendState: { value: MutationState } = {
   value: { mutateAsync: vi.fn().mockResolvedValue(undefined), isPending: false },
 };
 
+const markReadState: { value: { mutate: ReturnType<typeof vi.fn> } } = {
+  value: { mutate: vi.fn() },
+};
+
 vi.mock("../../hooks/queries/useChat", () => ({
   useChatMessages: () => msgState.value,
   useSendMessage: () => sendState.value,
+  useMarkMessagesRead: () => markReadState.value,
   // Subscription noop in Tests — Realtime wird nicht getriggert.
   useChatSubscription: () => undefined,
 }));
@@ -59,6 +64,7 @@ describe("ChatPanel", () => {
       mutateAsync: vi.fn().mockResolvedValue(undefined),
       isPending: false,
     };
+    markReadState.value = { mutate: vi.fn() };
   });
 
   it("zeigt Loading-State", () => {
@@ -119,5 +125,68 @@ describe("ChatPanel", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: /Senden/ }));
     await waitFor(() => expect(sendState.value.mutateAsync).toHaveBeenCalledWith("Hi"));
+  });
+
+  it("ruft mark_messages_read wenn fremde unread Messages existieren", () => {
+    msgState.value = {
+      data: [msg({ sender_id: "other", read_at: null })],
+      isLoading: false,
+      error: null,
+    };
+    renderPanel();
+    expect(markReadState.value.mutate).toHaveBeenCalled();
+  });
+
+  it("ruft mark_messages_read NICHT wenn alle Messages eigen sind", () => {
+    msgState.value = {
+      data: [msg({ sender_id: "me", read_at: null })],
+      isLoading: false,
+      error: null,
+    };
+    renderPanel();
+    expect(markReadState.value.mutate).not.toHaveBeenCalled();
+  });
+
+  it("ruft mark_messages_read NICHT wenn isLocked", () => {
+    msgState.value = {
+      data: [msg({ sender_id: "other", read_at: null })],
+      isLoading: false,
+      error: null,
+    };
+    renderPanel({ isLocked: true });
+    expect(markReadState.value.mutate).not.toHaveBeenCalled();
+  });
+
+  it("zeigt Doppel-Check (✓✓) bei eigener Message mit read_at", () => {
+    msgState.value = {
+      data: [msg({ sender_id: "me", read_at: "2026-05-01T13:00:00Z", body: "Hi" })],
+      isLoading: false,
+      error: null,
+    };
+    renderPanel();
+    expect(screen.getByLabelText("Gelesen")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Gesendet")).toBeNull();
+  });
+
+  it("zeigt Einzel-Check (✓) bei eigener Message ohne read_at", () => {
+    msgState.value = {
+      data: [msg({ sender_id: "me", read_at: null, body: "Hi" })],
+      isLoading: false,
+      error: null,
+    };
+    renderPanel();
+    expect(screen.getByLabelText("Gesendet")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Gelesen")).toBeNull();
+  });
+
+  it("zeigt KEINE Checkmarks bei fremden Messages", () => {
+    msgState.value = {
+      data: [msg({ sender_id: "other", read_at: null })],
+      isLoading: false,
+      error: null,
+    };
+    renderPanel();
+    expect(screen.queryByLabelText("Gesendet")).toBeNull();
+    expect(screen.queryByLabelText("Gelesen")).toBeNull();
   });
 });

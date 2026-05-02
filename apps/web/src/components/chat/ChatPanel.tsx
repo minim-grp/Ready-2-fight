@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import {
   useChatMessages,
   useChatSubscription,
+  useMarkMessagesRead,
   useSendMessage,
   type ChatMessage,
 } from "../../hooks/queries/useChat";
@@ -28,6 +29,7 @@ export function ChatPanel({
 }: Props) {
   const messages = useChatMessages(channelId);
   const send = useSendMessage(channelId);
+  const markRead = useMarkMessagesRead(channelId);
   useChatSubscription(channelId);
   const [body, setBody] = useState("");
   const listRef = useRef<HTMLUListElement | null>(null);
@@ -38,6 +40,19 @@ export function ChatPanel({
     if (!el) return;
     el.scrollTop = el.scrollHeight;
   }, [messages.data?.length]);
+
+  // Read-Receipts §1.30: Markieren wenn ChatPage offen ist und es
+  // ungelesene fremde Messages gibt. Triggert auf jede Aenderung der
+  // Cache-Liste (neue Inserts via Realtime fallen darunter).
+  const unreadFromOthers = (messages.data ?? []).some(
+    (m) => m.sender_id !== currentUserId && m.read_at === null,
+  );
+  const markMutate = markRead.mutate;
+  useEffect(() => {
+    if (unreadFromOthers && !isLocked) {
+      markMutate();
+    }
+  }, [unreadFromOthers, isLocked, markMutate]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -155,14 +170,19 @@ function MessageBubble({ message, isMine }: { message: ChatMessage; isMine: bool
       >
         <p>{message.body}</p>
         <p
-          className="mt-1 text-[10px] tabular-nums"
+          className="mt-1 flex items-center justify-end gap-1 text-[10px] tabular-nums"
           style={{
             fontFamily: "var(--font-mono)",
             color: isMine ? "var(--color-on-night)" : "var(--color-ink-3)",
             opacity: isMine ? 0.75 : 1,
           }}
         >
-          {formatTime(message.created_at)}
+          <span>{formatTime(message.created_at)}</span>
+          {isMine && (
+            <span aria-label={message.read_at ? "Gelesen" : "Gesendet"}>
+              {message.read_at ? "✓✓" : "✓"}
+            </span>
+          )}
         </p>
       </div>
     </li>
