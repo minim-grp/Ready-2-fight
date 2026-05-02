@@ -1,7 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render as rtlRender, screen, fireEvent, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { EngagementsList } from "./EngagementsList";
 import type { EngagementRow } from "../../hooks/queries/useEngagements";
+
+// MemoryRouter-Wrapper noetig wegen <Link> auf /app/chat/:engagementId (§1.29).
+function render(ui: React.ReactElement) {
+  return rtlRender(<MemoryRouter>{ui}</MemoryRouter>);
+}
 
 type QueryState = {
   data: EngagementRow[] | undefined;

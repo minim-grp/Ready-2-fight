@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useAuthStore } from "../../stores/auth";
 import { useEngagements, type EngagementRow } from "../../hooks/queries/useEngagements";
 import {
@@ -234,6 +235,19 @@ function EngagementRowView({
           granted={grantedPermissions}
           engagementId={row.id}
         />
+      )}
+
+      {row.status !== "ended" && (
+        <Link
+          to={`/app/chat/${row.id}`}
+          className="mt-3 inline-block text-xs"
+          style={{
+            color: "var(--color-accent)",
+            textDecoration: "underline",
+          }}
+        >
+          Chat oeffnen →
+        </Link>
       )}
 
       {row.status !== "ended" && (
