@@ -41,12 +41,20 @@ vi.mock("../hooks/queries/useProfile", () => ({
 vi.mock("../stores/mode", () => ({
   useModeStore: (sel: (s: { mode: string }) => unknown) => sel({ mode: "coach" }),
 }));
+const assignState: { value: MutationState } = {
+  value: { mutateAsync: vi.fn().mockResolvedValue("p-assigned"), isPending: false },
+};
+
 vi.mock("../hooks/queries/usePlans", () => ({
   useCoachPlans: () => plansState.value,
   useCreatePlan: () => createState.value,
   useDeletePlan: () => deleteState.value,
   useClonePlan: () => cloneState.value,
   useArchivePlan: () => archiveState.value,
+  useAssignPlan: () => assignState.value,
+}));
+vi.mock("../hooks/queries/useEngagements", () => ({
+  useEngagements: () => ({ data: [], isLoading: false, error: null }),
 }));
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
@@ -76,6 +84,10 @@ describe("PlansPage", () => {
     };
     archiveState.value = {
       mutateAsync: vi.fn().mockResolvedValue(undefined),
+      isPending: false,
+    };
+    assignState.value = {
+      mutateAsync: vi.fn().mockResolvedValue("p-assigned"),
       isPending: false,
     };
   });
@@ -333,6 +345,56 @@ describe("PlansPage", () => {
         archive: false,
       }),
     );
+  });
+
+  it("Zuweisen-Button nur bei aktiven Templates sichtbar, oeffnet AssignPlanModal", () => {
+    plansState.value = {
+      data: [
+        {
+          id: "p1",
+          owner_id: "c1",
+          athlete_id: null,
+          athlete_name: null,
+          title: "Boxen 4 Wochen",
+          description: null,
+          is_template: true,
+          archived_at: null,
+          starts_on: null,
+          ends_on: null,
+          created_at: "2026-04-30T00:00:00Z",
+          updated_at: "2026-04-30T00:00:00Z",
+        },
+        {
+          id: "p2",
+          owner_id: "c1",
+          athlete_id: "a1",
+          athlete_name: "Lena",
+          title: "Wettkampf-Cut",
+          description: null,
+          is_template: false,
+          archived_at: null,
+          starts_on: null,
+          ends_on: null,
+          created_at: "2026-04-30T00:00:00Z",
+          updated_at: "2026-04-30T00:00:00Z",
+        },
+      ],
+      isLoading: false,
+      error: null,
+    };
+    renderPage();
+    // Zuweisen-Button nur fuer Template (p1)
+    expect(
+      screen.getByRole("button", { name: /Plan Boxen 4 Wochen zuweisen/ }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /Plan Wettkampf-Cut zuweisen/ }),
+    ).toBeNull();
+    // Modal oeffnet
+    fireEvent.click(screen.getByRole("button", { name: /Plan Boxen 4 Wochen zuweisen/ }));
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveAttribute("aria-labelledby", "assign-plan-title");
   });
 
   it("redirected wenn nicht Coach-View", () => {

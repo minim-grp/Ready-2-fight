@@ -5,7 +5,8 @@ import { EngagementsList } from "./EngagementsList";
 import type { EngagementRow } from "../../hooks/queries/useEngagements";
 
 // MemoryRouter-Wrapper noetig, weil EngagementsList fuer Coach-Sicht
-// einen <Link> auf /app/athletes/:athleteId enthaelt (§1.27).
+// <Link>s auf /app/athletes/:athleteId (§1.27 Detail) und
+// /app/athletes/:athleteId/competitions (§1.26b Wettkaempfe) enthaelt.
 function render(ui: React.ReactElement) {
   return rtlRender(<MemoryRouter>{ui}</MemoryRouter>);
 }

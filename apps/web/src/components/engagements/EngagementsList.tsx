@@ -250,6 +250,19 @@ function EngagementRowView({
         </Link>
       )}
 
+      {isCoach && row.status === "active" && row.can_see_tracking && (
+        <Link
+          to={`/app/athletes/${row.athlete_id}/competitions`}
+          className="mt-3 ml-3 inline-block text-xs"
+          style={{
+            color: "var(--color-accent)",
+            textDecoration: "underline",
+          }}
+        >
+          Wettkaempfe ansehen →
+        </Link>
+      )}
+
       {row.status !== "ended" && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {row.status === "active" && (
