@@ -5,6 +5,7 @@ import { useModeStore, type ActiveMode } from "../../stores/mode";
 import { BottomNav } from "./BottomNav";
 import { navItemsFor } from "./navItems";
 import { OfflineBanner } from "./OfflineBanner";
+import { NotificationBell } from "../notifications/NotificationBell";
 
 export function AppLayout() {
   const user = useAuthStore((s) => s.user);
@@ -20,14 +21,17 @@ export function AppLayout() {
       <header className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-slate-800 bg-slate-900/80 px-4 py-3 backdrop-blur">
         <span className="text-sm font-semibold tracking-wide">Ready 2 Fight</span>
         {role === "both" && <ModeToggle mode={mode} onChange={setMode} />}
-        <button
-          type="button"
-          onClick={() => void signOut()}
-          className="text-xs text-slate-400 hover:text-slate-200"
-          aria-label={`Abmelden ${user?.email ?? ""}`}
-        >
-          Abmelden
-        </button>
+        <div className="flex items-center gap-2">
+          <NotificationBell />
+          <button
+            type="button"
+            onClick={() => void signOut()}
+            className="text-xs text-slate-400 hover:text-slate-200"
+            aria-label={`Abmelden ${user?.email ?? ""}`}
+          >
+            Abmelden
+          </button>
+        </div>
       </header>
 
       <OfflineBanner />
