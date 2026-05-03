@@ -56,6 +56,35 @@ export function useChatMessages(channelId: string | undefined) {
   });
 }
 
+// Markiert alle fremden Messages im Channel als gelesen via SECURITY-DEFINER
+// RPC (PR §1.30a). Wird beim Oeffnen des Chats und nach jedem neuen
+// fremden Insert aufgerufen — die UPDATE-Subscription des Senders
+// patcht dann den Cache, damit der "Gelesen"-Indicator erscheint.
+export function useMarkMessagesRead(channelId: string | undefined) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (): Promise<number> => {
+      if (!channelId) return 0;
+      const { data, error } = await supabase.rpc("mark_messages_read", {
+        p_channel_id: channelId,
+      });
+      if (error) throw error;
+      return Number(data ?? 0);
+    },
+    onSuccess: (count) => {
+      // Eigene UI optimistisch aktualisieren — wir kennen aber den exakten
+      // read_at-Timestamp nicht. setQueryData markiert deshalb pauschal mit
+      // jetzt; der Listener-Patch ueberschreibt das mit dem Server-Wert
+      // sobald der Realtime-Event eintrifft (in der Praxis < 200 ms).
+      if (count === 0 || !channelId) return;
+      const now = new Date().toISOString();
+      qc.setQueryData<ChatMessage[]>(["chat-messages", channelId], (prev) =>
+        prev ? prev.map((m) => (m.read_at === null ? { ...m, read_at: now } : m)) : prev,
+      );
+    },
+  });
+}
+
 export function useSendMessage(channelId: string) {
   const qc = useQueryClient();
   const userId = useAuthStore((s) => s.user?.id);
@@ -85,6 +114,11 @@ export function useSendMessage(channelId: string) {
 // Tanstack-Cache, damit keine zweite Roundtrip noetig ist.
 // Postgres-Changes-API liefert nur die Row, RLS wurde server-seitig schon
 // gegen den Listener gepruefte → Coach/Athlet sehen nur ihre eigenen Channels.
+//
+// UPDATE-Listener fuer §1.30 Read-Receipts: wenn das Gegenueber
+// mark_messages_read aufruft, kommt fuer jede aktualisierte Row ein
+// UPDATE-Event mit dem neuen read_at — wir patchen die Cache-Row
+// damit der Sender ein "Gelesen" sieht ohne Refetch.
 export function useChatSubscription(channelId: string | undefined) {
   const qc = useQueryClient();
   useEffect(() => {
@@ -105,6 +139,22 @@ export function useChatSubscription(channelId: string | undefined) {
             if (!prev) return [row];
             if (prev.some((m) => m.id === row.id)) return prev;
             return [...prev, row];
+          });
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "chat_messages",
+          filter: `channel_id=eq.${channelId}`,
+        },
+        (payload) => {
+          const row = payload.new as ChatMessage;
+          qc.setQueryData<ChatMessage[]>(["chat-messages", channelId], (prev) => {
+            if (!prev) return prev;
+            return prev.map((m) => (m.id === row.id ? row : m));
           });
         },
       )
