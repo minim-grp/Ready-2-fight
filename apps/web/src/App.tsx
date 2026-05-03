@@ -18,6 +18,7 @@ import { TrackingPage } from "./pages/TrackingPage";
 import { CompetitionsPage } from "./pages/CompetitionsPage";
 import { CoachAthleteCompetitionsPage } from "./pages/CoachAthleteCompetitionsPage";
 import { CoachAthleteDetailPage } from "./pages/CoachAthleteDetailPage";
+import { ChatPage } from "./pages/ChatPage";
 import { SettingsPage } from "./pages/SettingsPage";
 
 export default function App() {
@@ -48,6 +49,7 @@ export default function App() {
             path="athletes/:athleteId/competitions"
             element={<CoachAthleteCompetitionsPage />}
           />
+          <Route path="chat/:engagementId" element={<ChatPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Route>

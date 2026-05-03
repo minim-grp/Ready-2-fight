@@ -4,9 +4,10 @@ import { MemoryRouter } from "react-router-dom";
 import { EngagementsList } from "./EngagementsList";
 import type { EngagementRow } from "../../hooks/queries/useEngagements";
 
-// MemoryRouter-Wrapper noetig, weil EngagementsList fuer Coach-Sicht
-// <Link>s auf /app/athletes/:athleteId (§1.27 Detail) und
-// /app/athletes/:athleteId/competitions (§1.26b Wettkaempfe) enthaelt.
+// MemoryRouter-Wrapper noetig wegen mehrerer <Link>s in EngagementsList:
+// /app/chat/:engagementId (§1.29) sowie Coach-Links auf
+// /app/athletes/:athleteId (§1.27 Detail) und
+// /app/athletes/:athleteId/competitions (§1.26b Wettkaempfe).
 function render(ui: React.ReactElement) {
   return rtlRender(<MemoryRouter>{ui}</MemoryRouter>);
 }

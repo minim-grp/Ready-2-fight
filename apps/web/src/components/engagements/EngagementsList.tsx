@@ -264,6 +264,19 @@ function EngagementRowView({
       )}
 
       {row.status !== "ended" && (
+        <Link
+          to={`/app/chat/${row.id}`}
+          className="mt-3 inline-block text-xs"
+          style={{
+            color: "var(--color-accent)",
+            textDecoration: "underline",
+          }}
+        >
+          Chat oeffnen →
+        </Link>
+      )}
+
+      {row.status !== "ended" && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {row.status === "active" && (
             <ActionButton
