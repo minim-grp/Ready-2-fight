@@ -17,28 +17,22 @@ const markReadMock = vi.fn();
 const markAllMock = vi.fn();
 const subscribeMock = vi.fn();
 
-vi.mock("../../hooks/queries/useNotifications", async () => {
-  const actual = await vi.importActual<
-    typeof import("../../hooks/queries/useNotifications")
-  >("../../hooks/queries/useNotifications");
-  return {
-    ...actual,
-    useNotifications: () => queryState.value,
-    useUnreadNotificationsCount: () =>
-      (queryState.value.data ?? []).filter((n) => n.read === false).length,
-    useNotificationsSubscription: () => {
-      subscribeMock();
-    },
-    useMarkNotificationRead: () => ({
-      mutate: markReadMock,
-      isPending: false,
-    }),
-    useMarkAllNotificationsRead: () => ({
-      mutate: markAllMock,
-      isPending: false,
-    }),
-  };
-});
+vi.mock("../../hooks/queries/useNotifications", () => ({
+  useNotifications: () => queryState.value,
+  useUnreadNotificationsCount: () =>
+    (queryState.value.data ?? []).filter((n) => n.read === false).length,
+  useNotificationsSubscription: () => {
+    subscribeMock();
+  },
+  useMarkNotificationRead: () => ({
+    mutate: markReadMock,
+    isPending: false,
+  }),
+  useMarkAllNotificationsRead: () => ({
+    mutate: markAllMock,
+    isPending: false,
+  }),
+}));
 
 function makeNotif(overrides: Partial<Notification> = {}): Notification {
   return {
