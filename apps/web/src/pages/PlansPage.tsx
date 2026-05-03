@@ -11,6 +11,7 @@ import {
   type CoachPlan,
 } from "../hooks/queries/usePlans";
 import { CreatePlanModal } from "../components/plans/CreatePlanModal";
+import { AssignPlanModal } from "../components/plans/AssignPlanModal";
 import { ConfirmDialog } from "../components/common/ConfirmDialog";
 
 const CARD_STYLE: React.CSSProperties = {
@@ -35,6 +36,7 @@ export function PlansPage() {
   const [cloningId, setCloningId] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+  const [assigning, setAssigning] = useState<CoachPlan | null>(null);
 
   if (profile.isLoading) {
     return (
@@ -184,6 +186,7 @@ export function PlansPage() {
                       onDelete={() => setConfirmDelete(p)}
                       onClone={() => void handleClone(p)}
                       onArchive={() => void handleArchive(p)}
+                      onAssign={() => setAssigning(p)}
                     />
                   ))}
                 </ul>
@@ -193,6 +196,15 @@ export function PlansPage() {
         })()}
 
       {creating && <CreatePlanModal onClose={() => setCreating(false)} />}
+
+      {assigning && (
+        <AssignPlanModal
+          templateId={assigning.id}
+          templateTitle={assigning.title}
+          onClose={() => setAssigning(null)}
+          onAssigned={(newId) => void navigate(`/app/plans/${newId}`)}
+        />
+      )}
 
       <ConfirmDialog
         open={confirmDelete !== null}
@@ -220,6 +232,7 @@ type PlanCardProps = {
   onDelete: () => void;
   onClone: () => void;
   onArchive: () => void;
+  onAssign: () => void;
 };
 
 function PlanCard({
@@ -229,6 +242,7 @@ function PlanCard({
   onDelete,
   onClone,
   onArchive,
+  onAssign,
 }: PlanCardProps) {
   const isArchived = plan.archived_at !== null;
   const subtitle = plan.is_template
@@ -284,6 +298,21 @@ function PlanCard({
           )}
         </Link>
         <div className="flex flex-col gap-1">
+          {plan.is_template && !isArchived && (
+            <button
+              type="button"
+              onClick={onAssign}
+              aria-label={`Plan ${plan.title} zuweisen`}
+              className="rounded-2xl px-3 py-2 text-xs"
+              style={{
+                border: "1px solid var(--color-accent)",
+                color: "var(--color-accent)",
+                backgroundColor: "transparent",
+              }}
+            >
+              Zuweisen
+            </button>
+          )}
           <button
             type="button"
             onClick={onClone}

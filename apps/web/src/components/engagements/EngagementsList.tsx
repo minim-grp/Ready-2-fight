@@ -237,6 +237,32 @@ function EngagementRowView({
         />
       )}
 
+      {isCoach && row.status === "active" && (
+        <Link
+          to={`/app/athletes/${row.athlete_id}`}
+          className="mt-3 inline-block text-xs"
+          style={{
+            color: "var(--color-accent)",
+            textDecoration: "underline",
+          }}
+        >
+          Athleten-Details ansehen →
+        </Link>
+      )}
+
+      {isCoach && row.status === "active" && row.can_see_tracking && (
+        <Link
+          to={`/app/athletes/${row.athlete_id}/competitions`}
+          className="mt-3 ml-3 inline-block text-xs"
+          style={{
+            color: "var(--color-accent)",
+            textDecoration: "underline",
+          }}
+        >
+          Wettkaempfe ansehen →
+        </Link>
+      )}
+
       {row.status !== "ended" && (
         <Link
           to={`/app/chat/${row.id}`}

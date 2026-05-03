@@ -1,12 +1,15 @@
 import { useAuthStore } from "../stores/auth";
 import { useModeStore } from "../stores/mode";
 import { useProfile } from "../hooks/queries/useProfile";
+import { useEngagements } from "../hooks/queries/useEngagements";
 import { TrackingForm } from "../components/tracking/TrackingForm";
 import { CrsHeroCard } from "../components/dashboard/CrsHeroCard";
 import { StreakCard } from "../components/dashboard/StreakCard";
 import { StreakHistoryChart } from "../components/dashboard/StreakHistoryChart";
 import { WeightHistoryChart } from "../components/dashboard/WeightHistoryChart";
 import { CoachEmptyState } from "../components/dashboard/CoachEmptyState";
+import { CoachWeekCalendarCard } from "../components/dashboard/CoachWeekCalendarCard";
+import { CoachAttentionCard } from "../components/dashboard/CoachAttentionCard";
 
 const DAY_NAMES = [
   "Sonntag",
@@ -22,9 +25,15 @@ export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const mode = useModeStore((s) => s.mode);
   const profile = useProfile();
+  const engagements = useEngagements();
 
   const role = profile.data?.role;
   const showAthlete = role === "athlete" || (role === "both" && mode === "athlete");
+  const showCoach = role === "coach" || (role === "both" && mode === "coach");
+  const hasActiveEngagements =
+    (engagements.data ?? []).some(
+      (e) => e.status === "active" && e.coach_id === user?.id,
+    ) ?? false;
   const greeting = pickGreeting(new Date());
   const dayLabel = formatDay(new Date());
 
@@ -77,7 +86,14 @@ export function DashboardPage() {
         </>
       )}
 
-      {!showAthlete && profile.data && <CoachEmptyState />}
+      {showCoach && profile.data && hasActiveEngagements && (
+        <>
+          <CoachWeekCalendarCard />
+          <CoachAttentionCard />
+        </>
+      )}
+
+      {showCoach && profile.data && !hasActiveEngagements && <CoachEmptyState />}
     </section>
   );
 }

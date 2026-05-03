@@ -122,6 +122,32 @@ export function useClonePlan() {
   });
 }
 
+export type AssignPlanInput = {
+  template_id: string;
+  athlete_id: string;
+  engagement_id: string;
+};
+
+export function useAssignPlan() {
+  const qc = useQueryClient();
+  const userId = useAuthStore((s) => s.user?.id);
+  return useMutation({
+    mutationFn: async (input: AssignPlanInput): Promise<string> => {
+      const { data, error } = await supabase.rpc("assign_plan", {
+        p_template_id: input.template_id,
+        p_athlete_id: input.athlete_id,
+        p_engagement_id: input.engagement_id,
+      });
+      if (error) throw error;
+      if (!data) throw new Error("assign_plan_no_id");
+      return data;
+    },
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["plans", "coach", userId] });
+    },
+  });
+}
+
 // Archivieren / Wiederherstellen via UPDATE auf training_plans.archived_at.
 // RLS tp_owner_all erlaubt Owner-only Updates; kein RPC noetig.
 export function useArchivePlan() {

@@ -6,6 +6,7 @@ import { useModeStore } from "../stores/mode";
 import { ProfileCard } from "../components/settings/ProfileCard";
 import { ModeSwitcherCard } from "../components/settings/ModeSwitcherCard";
 import { AiConsentCard } from "../components/settings/AiConsentCard";
+import { AthleteShortcutsCard } from "../components/settings/AthleteShortcutsCard";
 import { DataRightsCard } from "../components/settings/DataRightsCard";
 import { SessionCard } from "../components/settings/SessionCard";
 
@@ -65,6 +66,11 @@ export function SettingsPage() {
 
           {profile.data.role === "both" && (
             <ModeSwitcherCard mode={mode} onChange={setMode} />
+          )}
+
+          {(profile.data.role === "athlete" ||
+            (profile.data.role === "both" && mode === "athlete")) && (
+            <AthleteShortcutsCard />
           )}
 
           <AiConsentCard consent={profile.data.ai_consent} />
