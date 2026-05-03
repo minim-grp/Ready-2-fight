@@ -17,6 +17,7 @@ import { AthletePlanDetailPage } from "./pages/AthletePlanDetailPage";
 import { TrackingPage } from "./pages/TrackingPage";
 import { CompetitionsPage } from "./pages/CompetitionsPage";
 import { CoachAthleteCompetitionsPage } from "./pages/CoachAthleteCompetitionsPage";
+import { CoachAthleteDetailPage } from "./pages/CoachAthleteDetailPage";
 import { SettingsPage } from "./pages/SettingsPage";
 
 export default function App() {
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="plan/:id" element={<AthletePlanDetailPage />} />
           <Route path="engagements" element={<EngagementsPage />} />
           <Route path="athletes" element={<Navigate to="/app/engagements" replace />} />
+          <Route path="athletes/:athleteId" element={<CoachAthleteDetailPage />} />
           <Route path="codes" element={<CodesPage />} />
           <Route path="competitions" element={<CompetitionsPage />} />
           <Route
